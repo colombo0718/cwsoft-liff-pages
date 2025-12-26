@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <title>cwsoft 六宮格圖文選單（750x500）</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: #eeeeee;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+        "Noto Sans TC", sans-serif;
+    }
+    h1 {
+      font-size: 18px;
+      margin-bottom: 8px;
+    }
+    #controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+      font-size: 14px;
+    }
+    #canvasWrapper {
+      background: white;
+      padding: 8px;
+      border-radius: 16px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+      margin-bottom: 10px;
+    }
+    canvas {
+      display: block;
+      max-width: 95vw;
+      height: auto;
+    }
+    input[type="range"] {
+      width: 200px;
+    }
+  </style>
+</head>
+<body>
+  <h1>cwsoft 六宮格圖文選單（750×500）</h1>
+
+  <div id="controls">
+    <label for="hueSlider">色調 Hue：</label>
+    <input id="hueSlider" type="range" min="0" max="360" value="220" />
+    <span id="hueValue">220°</span>
+  </div>
+
+  <div id="canvasWrapper">
+    <!-- 寬 750，高 500（3:2 橫式） -->
+    <canvas id="menuCanvas" width="750" height="500"></canvas>
+  </div>
+
+  <script>
+    const canvas = document.getElementById("menuCanvas");
+    const ctx = canvas.getContext("2d");
+    const hueSlider = document.getElementById("hueSlider");
+    const hueValueLabel = document.getElementById("hueValue");
+
+    // 飽和度固定 0.7（70%）、亮度固定 45%
+    function getBackgroundColor(hueDeg) {
+      return `hsl(${hueDeg}, 70%, 45%)`;
+    }
+
+    // 六個功能
+    const TILES = [
+      { emoji: "1F4F1", label: "新機預約" }, // 📱
+      { emoji: "267B",  label: "舊機收購" }, // ♻
+      { emoji: "1F465", label: "加入會員" }, // 👥
+      { emoji: "1F381", label: "推薦有禮" }, // 🎁
+      { emoji: "1F5FA", label: "門市導覽" }, // 🗺
+      { emoji: "1F6E0", label: "線上報修" }, // 🛠
+    ];
+
+    const OPENMOJI_BASE =
+      "https://cdn.jsdelivr.net/gh/hfg-gmuend/openmoji/color/618x618/";
+
+    const images = [];
+    let loadedCount = 0;
+    let currentHue = parseInt(hueSlider.value, 10);
+
+    function loadImagesAndDraw() {
+      TILES.forEach((tile, index) => {
+        const img = new Image();
+        img.crossOrigin = "anonymous";
+        img.onload = () => {
+          images[index] = img;
+          loadedCount++;
+          if (loadedCount === TILES.length) {
+            drawMenu();
+          }
+        };
+        img.onerror = () => {
+          console.warn("圖片載入失敗：", tile.emoji);
+          loadedCount++;
+          if (loadedCount === TILES.length) {
+            drawMenu();
+          }
+        };
+        img.src = OPENMOJI_BASE + tile.emoji.toUpperCase() + ".png";
+      });
+    }
+
+    function drawMenu() {
+      const W = canvas.width;   // 750
+      const H = canvas.height;  // 500
+
+      // 背景依照目前 hue
+      ctx.fillStyle = getBackgroundColor(currentHue);
+      ctx.fillRect(0, 0, W, H);
+
+      const cols = 3;
+      const rows = 2;
+      const cellW = W / cols;   // 250
+      const cellH = H / rows;   // 250
+
+      // 分隔線（白色）
+      ctx.strokeStyle = "#ffffff";
+      ctx.lineWidth = 3;
+
+      ctx.beginPath();
+      // 垂直線
+      ctx.moveTo(cellW, 0);
+      ctx.lineTo(cellW, H);
+      ctx.moveTo(cellW * 2, 0);
+      ctx.lineTo(cellW * 2, H);
+      // 水平線
+      ctx.moveTo(0, cellH);
+      ctx.lineTo(W, cellH);
+      ctx.stroke();
+
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+
+      TILES.forEach((tile, i) => {
+        const col = i % cols;
+        const row = Math.floor(i / cols);
+
+        const centerX = col * cellW + cellW / 2;
+        const centerY = row * cellH + cellH / 2;
+
+        // Emoji
+        const img = images[i];
+        if (img) {
+          const emojiSize = Math.min(cellW, cellH) * 0.55;
+          const imgRatio = img.width / img.height;
+          let drawW, drawH;
+          if (imgRatio >= 1) {
+            drawW = emojiSize;
+            drawH = emojiSize / imgRatio;
+          } else {
+            drawH = emojiSize;
+            drawW = emojiSize * imgRatio;
+          }
+          const emojiY = centerY - cellH * 0.15;
+
+          ctx.drawImage(
+            img,
+            centerX - drawW / 2,
+            emojiY - drawH / 2,
+            drawW,
+            drawH
+          );
+        }
+
+        // 文字（放大版）
+        ctx.fillStyle = "#ffffff";
+        ctx.font =
+          "bold 44px 'Noto Sans TC', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
+        const textY = row * cellH + cellH * 0.8;
+        ctx.fillText(tile.label, centerX, textY);
+      });
+
+      // 右下角 cwsoft 全葳資訊，改黑字
+      ctx.save();
+      ctx.textAlign = "right";
+      ctx.textBaseline = "bottom";
+      ctx.font =
+        "bold 18px 'Noto Sans TC', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
+      ctx.fillStyle = "#000000"; // 黑色
+      ctx.fillText("cwsoft 全葳資訊", W - 14, H - 10);
+      ctx.restore();
+    }
+
+    // slider 調整色調
+    hueSlider.addEventListener("input", () => {
+      currentHue = parseInt(hueSlider.value, 10);
+      hueValueLabel.textContent = currentHue + "°";
+      if (loadedCount === TILES.length) {
+        drawMenu();
+      }
+    });
+
+    loadImagesAndDraw();
+  </script>
+</body>
+</html>
