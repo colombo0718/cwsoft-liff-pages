@@ -8,6 +8,48 @@
   <!-- LIFF SDK -->
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <link rel="stylesheet" href="style.css">
+  <style>
+    /* 不依賴 style.css 的最小樣式補強（你可移到 style.css） */
+    .row { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+    .mini-btn {
+      border: 1px solid rgba(255,255,255,.18);
+      background: rgba(255,255,255,.06);
+      color: inherit;
+      padding: 10px 12px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .mini-btn:disabled { opacity: .5; cursor:not-allowed; }
+    .pill {
+      display:inline-flex; align-items:center; gap:8px;
+      padding: 8px 10px; border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.05);
+      font-size: 13px;
+      opacity: .95;
+    }
+    .ok { border-color: rgba(0,255,140,.25); }
+    .bad { border-color: rgba(255,80,80,.25); }
+    .cap-wrap { display:flex; gap:10px; align-items:center; }
+    #captchaCanvas {
+      width: 140px; height: 48px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.06);
+    }
+    .section-title {
+      margin-top: 14px;
+      font-weight: 800;
+      opacity: .95;
+      letter-spacing: .5px;
+    }
+    .helper {
+      font-size: 13px;
+      opacity: .8;
+      line-height: 1.4;
+    }
+  </style>
 </head>
 <body>
   <div class="card">
@@ -25,7 +67,7 @@
       （注意：這個 userId 是 LIFF/Provider 的，不一定等於該 OA webhook 的 userId）
     </div>
 
-    <!-- ❶ 新增：LIFF 使用者資訊顯示區 -->
+    <!-- LIFF 使用者資訊顯示區 -->
     <div class="preview" id="user-box" style="margin-top:12px;">
       <div class="preview-title">👤 LIFF 使用者資訊</div>
       <div id="user-body">（尚未初始化 LIFF…）</div>
@@ -60,7 +102,39 @@
         <textarea id="note" placeholder="例如：常用分店、特殊需求、生日等…"></textarea>
       </label>
 
-      <button type="submit" class="btn">
+      <!-- 防機器人驗證 -->
+      <div class="section-title">🛡️ 防機器人驗證</div>
+      <div class="helper">請輸入圖片中的四位數字（先求有版：前端隨機產生）。</div>
+
+      <div class="row" style="margin-top:10px;">
+        <div class="cap-wrap">
+          <canvas id="captchaCanvas" width="280" height="96"></canvas>
+          <button type="button" class="mini-btn" id="captchaRefreshBtn">🔄 換一張</button>
+        </div>
+      </div>
+
+      <div class="row" style="margin-top:10px;">
+        <input id="captchaInput" type="text" inputmode="numeric" maxlength="4" placeholder="輸入四位數字" style="flex:1; min-width: 200px;" />
+        <button type="button" class="mini-btn" id="captchaVerifyBtn">✅ 驗證</button>
+        <span class="pill bad" id="captchaState">尚未驗證</span>
+      </div>
+
+      <!-- OTP 驗證 -->
+      <div class="section-title">📲 OTP 簡訊驗證</div>
+      <div class="helper">先求有版：點「取得驗證碼」會在前端產生一組 OTP（會顯示在提示中/console），後續再換成後端簡訊 API。</div>
+
+      <div class="row" style="margin-top:10px;">
+        <button type="button" class="mini-btn" id="otpSendBtn" disabled>📩 取得驗證碼</button>
+        <span class="pill bad" id="otpSendState">尚未發送</span>
+      </div>
+
+      <div class="row" style="margin-top:10px;">
+        <input id="otpInput" type="text" inputmode="numeric" maxlength="6" placeholder="輸入 6 位 OTP" style="flex:1; min-width: 200px;" disabled />
+        <button type="button" class="mini-btn" id="otpVerifyBtn" disabled>🔐 進行驗證</button>
+        <span class="pill bad" id="otpVerifyState">尚未驗證</span>
+      </div>
+
+      <button type="submit" class="btn" id="submitBtn" disabled style="margin-top:14px;">
         <span class="icon">✅</span>
         <span>送出，寫入 Line 訊息</span>
       </button>
@@ -91,9 +165,34 @@
     const envWarningEl = document.getElementById("env-warning");
     const userBodyEl = document.getElementById("user-body");
     const form = document.getElementById("member-form");
+    const submitBtn = document.getElementById("submitBtn");
+
+    // Captcha
+    const captchaCanvas = document.getElementById("captchaCanvas");
+    const captchaRefreshBtn = document.getElementById("captchaRefreshBtn");
+    const captchaInput = document.getElementById("captchaInput");
+    const captchaVerifyBtn = document.getElementById("captchaVerifyBtn");
+    const captchaState = document.getElementById("captchaState");
+
+    // OTP
+    const otpSendBtn = document.getElementById("otpSendBtn");
+    const otpSendState = document.getElementById("otpSendState");
+    const otpInput = document.getElementById("otpInput");
+    const otpVerifyBtn = document.getElementById("otpVerifyBtn");
+    const otpVerifyState = document.getElementById("otpVerifyState");
 
     let liffReady = false;
-    let liffProfile = null; // 會存 { userId, displayName, pictureUrl, statusMessage }
+    let liffProfile = null;
+
+    // Captcha/OTP state
+    let captchaText = "";
+    let captchaVerified = false;
+
+    let otpCode = "";
+    let otpSent = false;
+    let otpVerified = false;
+    let otpCooldownTimer = null;
+    let otpCooldownSec = 0;
 
     function escapeHtml(s) {
       return (s ?? "").toString()
@@ -104,19 +203,246 @@
         .replaceAll("'", "&#039;");
     }
 
+    function normalizePhone(phone) {
+      return phone.replace(/[^\d]/g, "");
+    }
+
+    function setPill(el, ok, text) {
+      el.textContent = text;
+      el.classList.remove("ok", "bad");
+      el.classList.add(ok ? "ok" : "bad");
+    }
+
+    function refreshSubmitState() {
+      // 送出條件：captchaVerified + otpVerified
+      const enabled = captchaVerified && otpVerified;
+      submitBtn.disabled = !enabled;
+
+      // OTP 的「取得」條件：captchaVerified（且手機格式OK）
+      const phoneOk = normalizePhone(phoneInput.value.trim()).length >= 9;
+      otpSendBtn.disabled = !(captchaVerified && phoneOk && otpCooldownSec === 0);
+    }
+
+    // ===== Captcha =====
+    function randomDigits(n=4) {
+      let s = "";
+      for (let i=0;i<n;i++) s += Math.floor(Math.random()*10);
+      return s;
+    }
+
+    function drawCaptcha() {
+      captchaText = randomDigits(4);
+      captchaVerified = false;
+      setPill(captchaState, false, "尚未驗證");
+      captchaInput.value = "";
+
+      const ctx = captchaCanvas.getContext("2d");
+      const w = captchaCanvas.width;
+      const h = captchaCanvas.height;
+
+      // background
+      ctx.clearRect(0,0,w,h);
+      ctx.fillStyle = "rgba(255,255,255,0.06)";
+      ctx.fillRect(0,0,w,h);
+
+      // noise dots
+      for (let i=0;i<80;i++) {
+        ctx.fillStyle = `rgba(255,255,255,${Math.random()*0.25})`;
+        ctx.beginPath();
+        ctx.arc(Math.random()*w, Math.random()*h, Math.random()*2.2, 0, Math.PI*2);
+        ctx.fill();
+      }
+
+      // noise lines
+      for (let i=0;i<6;i++) {
+        ctx.strokeStyle = `rgba(255,255,255,${0.10 + Math.random()*0.25})`;
+        ctx.lineWidth = 2 + Math.random()*2;
+        ctx.beginPath();
+        ctx.moveTo(Math.random()*w, Math.random()*h);
+        ctx.bezierCurveTo(Math.random()*w, Math.random()*h, Math.random()*w, Math.random()*h, Math.random()*w, Math.random()*h);
+        ctx.stroke();
+      }
+
+      // text
+      ctx.save();
+      ctx.font = "bold 54px ui-monospace, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace";
+      ctx.fillStyle = "rgba(255,255,255,0.92)";
+      ctx.textBaseline = "middle";
+      ctx.textAlign = "center";
+
+      // slight rotation per char
+      const chars = captchaText.split("");
+      const startX = w/2 - 70;
+      for (let i=0;i<chars.length;i++) {
+        const x = startX + i*45;
+        const y = h/2 + (Math.random()*10 - 5);
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.rotate((Math.random()*0.35 - 0.175));
+        ctx.fillText(chars[i], 0, 0);
+        ctx.restore();
+      }
+      ctx.restore();
+
+      // OTP gate reset
+      otpCode = "";
+      otpSent = false;
+      otpVerified = false;
+      setPill(otpSendState, false, "尚未發送");
+      setPill(otpVerifyState, false, "尚未驗證");
+      otpInput.value = "";
+      otpInput.disabled = true;
+      otpVerifyBtn.disabled = true;
+
+      refreshSubmitState();
+      updatePreview();
+    }
+
+    captchaRefreshBtn.addEventListener("click", drawCaptcha);
+
+    captchaVerifyBtn.addEventListener("click", () => {
+      const v = captchaInput.value.trim();
+      if (v === captchaText) {
+        captchaVerified = true;
+        setPill(captchaState, true, "驗證成功 ✅");
+        // 開放 OTP 取得
+        refreshSubmitState();
+        statusEl.textContent = "防機器人驗證成功，可取得 OTP。";
+        statusEl.className = "status success";
+      } else {
+        captchaVerified = false;
+        setPill(captchaState, false, "驗證失敗 ❌");
+        statusEl.textContent = "圖形驗證碼錯誤，請再試一次。";
+        statusEl.className = "status error";
+        drawCaptcha(); // 失敗直接換一張，避免暴力猜
+      }
+      updatePreview();
+    });
+
+    captchaInput.addEventListener("input", () => {
+      if (captchaInput.value.trim().length === 4) {
+        // 讓使用者可以更快按
+      }
+    });
+
+    // ===== OTP (Demo mock) =====
+    function startOtpCooldown(sec=60) {
+      otpCooldownSec = sec;
+      otpSendBtn.disabled = true;
+      otpSendBtn.textContent = `⏳ 請稍候 (${otpCooldownSec}s)`;
+
+      if (otpCooldownTimer) clearInterval(otpCooldownTimer);
+      otpCooldownTimer = setInterval(() => {
+        otpCooldownSec -= 1;
+        if (otpCooldownSec <= 0) {
+          clearInterval(otpCooldownTimer);
+          otpCooldownTimer = null;
+          otpCooldownSec = 0;
+          otpSendBtn.textContent = "📩 取得驗證碼";
+          refreshSubmitState();
+          return;
+        }
+        otpSendBtn.textContent = `⏳ 請稍候 (${otpCooldownSec}s)`;
+      }, 1000);
+    }
+
+    function mockSendOtp() {
+      otpCode = randomDigits(6);
+      otpSent = true;
+      otpVerified = false;
+
+      setPill(otpSendState, true, "已發送 ✅");
+      setPill(otpVerifyState, false, "尚未驗證");
+
+      otpInput.disabled = false;
+      otpVerifyBtn.disabled = false;
+
+      // Demo：顯示提示（你也可以只 console.log）
+      statusEl.textContent = `【Demo】OTP 已產生：${otpCode}（之後接後端簡訊時移除）`;
+      statusEl.className = "status success";
+      console.log("Demo OTP:", otpCode);
+
+      startOtpCooldown(60);
+      refreshSubmitState();
+      updatePreview();
+    }
+
+    otpSendBtn.addEventListener("click", () => {
+      const phone = normalizePhone(phoneInput.value.trim());
+      const name = nameInput.value.trim();
+
+      if (!captchaVerified) {
+        statusEl.textContent = "請先完成防機器人驗證。";
+        statusEl.className = "status error";
+        return;
+      }
+      if (!name) {
+        statusEl.textContent = "請先填寫姓名。";
+        statusEl.className = "status error";
+        return;
+      }
+      if (phone.length < 9) {
+        statusEl.textContent = "請先填寫正確手機號碼。";
+        statusEl.className = "status error";
+        return;
+      }
+
+      // TODO(之後)：改成呼叫後端發送 OTP
+      // await fetch("/api/otp/send", {method:"POST", body: JSON.stringify({phone, name})})
+      mockSendOtp();
+    });
+
+    otpVerifyBtn.addEventListener("click", () => {
+      const v = otpInput.value.trim();
+      if (!otpSent) {
+        statusEl.textContent = "請先取得驗證碼。";
+        statusEl.className = "status error";
+        return;
+      }
+      if (v === otpCode) {
+        otpVerified = true;
+        setPill(otpVerifyState, true, "驗證成功 ✅");
+        statusEl.textContent = "OTP 驗證成功，可以送出。";
+        statusEl.className = "status success";
+      } else {
+        otpVerified = false;
+        setPill(otpVerifyState, false, "驗證失敗 ❌");
+        statusEl.textContent = "OTP 錯誤，請再試一次。";
+        statusEl.className = "status error";
+      }
+      refreshSubmitState();
+      updatePreview();
+    });
+
+    otpInput.addEventListener("input", () => {
+      if (otpInput.value.trim().length === 6 && !otpVerifyBtn.disabled) {
+        // 使用者可自行按「進行驗證」
+      }
+    });
+
+    // ===== LIFF + Message =====
     function buildMessageText() {
-      const phone = phoneInput.value.trim();
+      const phone = normalizePhone(phoneInput.value.trim());
       const name = nameInput.value.trim();
       const address = addressInput.value.trim();
       const note = noteInput.value.trim();
+      const otp = otpInput.value.trim();
 
       let lines = [];
       lines.push("GTB|BIND_MEMBER|v=1");
-      if (liffProfile?.userId) lines.push("LIFF_userId：" + liffProfile.userId); // 方便你在 webhook 看到
+      if (liffProfile?.userId) lines.push("LIFF_userId：" + liffProfile.userId);
+
+      // 驗證狀態（方便 webhook/人工判斷）
+      lines.push("Captcha：" + (captchaVerified ? "OK" : "NO"));
+      lines.push("OTP_Verified：" + (otpVerified ? "OK" : "NO"));
+
       if (name)   lines.push("姓名：" + name);
       if (phone)  lines.push("手機：" + phone);
       if (address) lines.push("地址：" + address);
       if (note)   lines.push("備註：" + note);
+
+      // 先求有：把 OTP 一起送回 webhook（後面上正式版會拿掉，改 HTTP POST）
+      if (otp) lines.push("OTP：" + otp);
 
       return lines.join("\n");
     }
@@ -126,14 +452,13 @@
       previewBodyEl.textContent = text || "（請先輸入上方資料…）";
     }
 
-    phoneInput.addEventListener("input", updatePreview);
-    nameInput.addEventListener("input", updatePreview);
+    phoneInput.addEventListener("input", () => { refreshSubmitState(); updatePreview(); });
+    nameInput.addEventListener("input",  () => { refreshSubmitState(); updatePreview(); });
     addressInput.addEventListener("input", updatePreview);
     noteInput.addEventListener("input", updatePreview);
 
     function renderUserBox(profile, extra = {}) {
       const rows = [];
-
       rows.push(`<div>✅ LIFF 已初始化：<b>${liffReady ? "是" : "否"}</b></div>`);
       rows.push(`<div>📱 isInClient：<b>${window.liff?.isInClient?.() ? "是" : "否"}</b></div>`);
       rows.push(`<div>🔐 isLoggedIn：<b>${window.liff?.isLoggedIn?.() ? "是" : "否"}</b></div>`);
@@ -167,25 +492,20 @@
         await liff.init({ liffId: LIFF_ID });
         liffReady = true;
 
-        // 如果不是在 LINE 內，仍可顯示狀態，但抓 profile 可能需要登入
         if (!liff.isInClient()) {
           envWarningEl.style.display = "block";
         }
 
-        // 如果尚未登入（外部瀏覽器常見），自動導去登入
         if (!liff.isLoggedIn()) {
           renderUserBox(null);
-          // 讓你看得到提示，再自動 login
           statusEl.textContent = "尚未登入 LINE（外部瀏覽器常見），即將導向登入…";
           statusEl.className = "status";
-          liff.login(); // 會重導回此頁
+          liff.login();
           return;
         }
 
-        // 取得 profile
         liffProfile = await liff.getProfile();
 
-        // 額外：取 ID token 的 sub（有些情境拿得到）
         let idTokenSub = "";
         try {
           const decoded = liff.getDecodedIDToken?.();
@@ -211,7 +531,7 @@
       statusEl.textContent = "";
       statusEl.className = "status";
 
-      const phone = phoneInput.value.trim();
+      const phone = normalizePhone(phoneInput.value.trim());
       const name = nameInput.value.trim();
 
       if (!phone || !name) {
@@ -220,18 +540,30 @@
         return;
       }
 
+      if (!captchaVerified) {
+        statusEl.textContent = "請先完成防機器人驗證。";
+        statusEl.className = "status error";
+        return;
+      }
+
+      if (!otpVerified) {
+        statusEl.textContent = "請先完成 OTP 驗證。";
+        statusEl.className = "status error";
+        return;
+      }
+
       const text = buildMessageText();
       updatePreview();
 
       if (!liffReady || !liff.isInClient()) {
-        statusEl.textContent = "Demo 模式：目前不在 Line 內開啟，無法真的送訊息（但已顯示 userId/預覽）。";
+        statusEl.textContent = "Demo 模式：目前不在 Line 內開啟，無法真的送訊息（但已顯示預覽）。";
         statusEl.className = "status success";
         return;
       }
 
       try {
         await liff.sendMessages([{ type: "text", text }]);
-        statusEl.textContent = "已送出訊息到 Line 對話視窗（含 LIFF userId 方便後端對照）。";
+        statusEl.textContent = "已送出訊息到 Line 對話視窗（含驗證狀態/OTP/LIFF userId 方便 webhook 端先跑通）。";
         statusEl.className = "status success";
       } catch (err) {
         console.error("送訊息失敗：", err);
@@ -240,9 +572,11 @@
       }
     });
 
-    // 初始化
+    // ===== Init =====
     updatePreview();
-    initLiff();
+    drawCaptcha();        // 先產生一張圖形驗證碼
+    refreshSubmitState(); // 初始化按鈕狀態
+    initLiff();           // 初始化 LIFF
   </script>
 </body>
 </html>
