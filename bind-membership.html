@@ -8,7 +8,6 @@
   <!-- LIFF SDK -->
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <link rel="stylesheet" href="style.css">
-
 </head>
 <body>
   <div class="card">
@@ -22,8 +21,14 @@
     </div>
 
     <div class="hint">
-      請填寫您的基本資料，送出後會以一則訊息傳到 Line 對話視窗，<br>
-      方便門市人員與系統完成會員綁定。
+      這頁必須透過 LIFF 開啟。開啟後會自動抓取使用者 Profile，並顯示 LIFF userId。<br>
+      （注意：這個 userId 是 LIFF/Provider 的，不一定等於該 OA webhook 的 userId）
+    </div>
+
+    <!-- ❶ 新增：LIFF 使用者資訊顯示區 -->
+    <div class="preview" id="user-box" style="margin-top:12px;">
+      <div class="preview-title">👤 LIFF 使用者資訊</div>
+      <div id="user-body">（尚未初始化 LIFF…）</div>
     </div>
 
     <form id="member-form">
@@ -69,12 +74,13 @@
     </div>
 
     <div class="env-warning" id="env-warning">
-      ⚠️ 偵測不到 LIFF 環境，目前在一般瀏覽器模式。實際要測試送訊息，需要從 Line OA 的 LIFF 入口開啟。
+      ⚠️ 偵測不到 LIFF 環境或不在 Line 內開啟。<br>
+      請從 Line OA 的 LIFF 入口開啟，才能抓到 userId 與送訊息。
     </div>
   </div>
 
   <script>
-    const LIFF_ID = "2008039127-p7We0QWm"; // 記得換成你自己的 LIFF ID
+    const LIFF_ID = "2008039127-p7We0QWm"; // 換成你的 LIFF ID
 
     const phoneInput = document.getElementById("phone");
     const nameInput = document.getElementById("name");
@@ -83,9 +89,20 @@
     const statusEl = document.getElementById("status");
     const previewBodyEl = document.getElementById("preview-body");
     const envWarningEl = document.getElementById("env-warning");
+    const userBodyEl = document.getElementById("user-body");
     const form = document.getElementById("member-form");
 
     let liffReady = false;
+    let liffProfile = null; // 會存 { userId, displayName, pictureUrl, statusMessage }
+
+    function escapeHtml(s) {
+      return (s ?? "").toString()
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
 
     function buildMessageText() {
       const phone = phoneInput.value.trim();
@@ -94,7 +111,8 @@
       const note = noteInput.value.trim();
 
       let lines = [];
-      lines.push("【加入會員申請】");
+      lines.push("GTB|BIND_MEMBER|v=1");
+      if (liffProfile?.userId) lines.push("LIFF_userId：" + liffProfile.userId); // 方便你在 webhook 看到
       if (name)   lines.push("姓名：" + name);
       if (phone)  lines.push("手機：" + phone);
       if (address) lines.push("地址：" + address);
@@ -113,9 +131,35 @@
     addressInput.addEventListener("input", updatePreview);
     noteInput.addEventListener("input", updatePreview);
 
+    function renderUserBox(profile, extra = {}) {
+      const rows = [];
+
+      rows.push(`<div>✅ LIFF 已初始化：<b>${liffReady ? "是" : "否"}</b></div>`);
+      rows.push(`<div>📱 isInClient：<b>${window.liff?.isInClient?.() ? "是" : "否"}</b></div>`);
+      rows.push(`<div>🔐 isLoggedIn：<b>${window.liff?.isLoggedIn?.() ? "是" : "否"}</b></div>`);
+
+      if (profile) {
+        rows.push("<hr style='opacity:.15;margin:10px 0;'>");
+        rows.push(`<div>userId：<code>${escapeHtml(profile.userId)}</code></div>`);
+        rows.push(`<div>displayName：<b>${escapeHtml(profile.displayName)}</b></div>`);
+        rows.push(`<div>statusMessage：${escapeHtml(profile.statusMessage || "（空）")}</div>`);
+        if (profile.pictureUrl) {
+          rows.push(`<div style="margin-top:8px;"><img src="${escapeHtml(profile.pictureUrl)}" alt="avatar" style="width:64px;height:64px;border-radius:12px;object-fit:cover;"></div>`);
+        }
+      }
+
+      if (extra.idTokenSub) {
+        rows.push("<hr style='opacity:.15;margin:10px 0;'>");
+        rows.push(`<div>ID Token sub：<code>${escapeHtml(extra.idTokenSub)}</code></div>`);
+      }
+
+      userBodyEl.innerHTML = rows.join("");
+    }
+
     async function initLiff() {
       if (!window.liff) {
         envWarningEl.style.display = "block";
+        userBodyEl.textContent = "（找不到 LIFF SDK）";
         return;
       }
 
@@ -123,13 +167,42 @@
         await liff.init({ liffId: LIFF_ID });
         liffReady = true;
 
+        // 如果不是在 LINE 內，仍可顯示狀態，但抓 profile 可能需要登入
         if (!liff.isInClient()) {
           envWarningEl.style.display = "block";
         }
+
+        // 如果尚未登入（外部瀏覽器常見），自動導去登入
+        if (!liff.isLoggedIn()) {
+          renderUserBox(null);
+          // 讓你看得到提示，再自動 login
+          statusEl.textContent = "尚未登入 LINE（外部瀏覽器常見），即將導向登入…";
+          statusEl.className = "status";
+          liff.login(); // 會重導回此頁
+          return;
+        }
+
+        // 取得 profile
+        liffProfile = await liff.getProfile();
+
+        // 額外：取 ID token 的 sub（有些情境拿得到）
+        let idTokenSub = "";
+        try {
+          const decoded = liff.getDecodedIDToken?.();
+          idTokenSub = decoded?.sub || "";
+        } catch (_) {}
+
+        renderUserBox(liffProfile, { idTokenSub });
+        updatePreview();
+
+        statusEl.textContent = "LIFF 初始化完成，已取得使用者資訊。";
+        statusEl.className = "status success";
       } catch (err) {
         console.error("LIFF 初始化失敗：", err);
-        statusEl.textContent = "LIFF 初始化失敗，請檢查 LIFF ID 或設定。";
+        statusEl.textContent = "LIFF 初始化失敗，請檢查 LIFF ID 或 LIFF 設定。";
         statusEl.className = "status error";
+        envWarningEl.style.display = "block";
+        renderUserBox(null);
       }
     }
 
@@ -150,29 +223,19 @@
       const text = buildMessageText();
       updatePreview();
 
-      // 非 LIFF 環境，改成只顯示在畫面上，方便你在瀏覽器先看效果
       if (!liffReady || !liff.isInClient()) {
-        console.log("Demo 模式：未在 LIFF 內，僅顯示訊息內容。");
-        statusEl.textContent = "Demo 模式：目前不在 LIFF 內，只顯示預覽，不會真的送訊息。";
+        statusEl.textContent = "Demo 模式：目前不在 Line 內開啟，無法真的送訊息（但已顯示 userId/預覽）。";
         statusEl.className = "status success";
         return;
       }
 
       try {
-        await liff.sendMessages([
-          {
-            type: "text",
-            text
-          }
-        ]);
-        statusEl.textContent = "已將加入會員資訊送到 Line 對話視窗，請等待門市人員處理。";
+        await liff.sendMessages([{ type: "text", text }]);
+        statusEl.textContent = "已送出訊息到 Line 對話視窗（含 LIFF userId 方便後端對照）。";
         statusEl.className = "status success";
-
-        // 可選：送出後關閉 LIFF
-        // setTimeout(() => liff.closeWindow(), 800);
       } catch (err) {
         console.error("送訊息失敗：", err);
-        statusEl.textContent = "送訊息失敗，請稍後再試或洽門市人員。";
+        statusEl.textContent = "送訊息失敗，請稍後再試。";
         statusEl.className = "status error";
       }
     });
