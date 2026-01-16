@@ -421,31 +421,24 @@
     });
 
     // ===== LIFF + Message =====
-    function buildMessageText() {
-      const phone = normalizePhone(phoneInput.value.trim());
-      const name = nameInput.value.trim();
-      const address = addressInput.value.trim();
-      const note = noteInput.value.trim();
-      const otp = otpInput.value.trim();
+let bindToken = ""; // OTP 成功後從後端拿到的一次性 token（先求有可先放假字串）
 
-      let lines = [];
-      lines.push("GTB|BIND_MEMBER|v=1");
-      if (liffProfile?.userId) lines.push("LIFF_userId：" + liffProfile.userId);
+function buildMessageText() {
+  const phone = normalizePhone(phoneInput.value.trim());
+  const name = nameInput.value.trim();
+  const address = addressInput.value.trim();
+  const note = noteInput.value.trim();
 
-      // 驗證狀態（方便 webhook/人工判斷）
-      lines.push("Captcha：" + (captchaVerified ? "OK" : "NO"));
-      lines.push("OTP_Verified：" + (otpVerified ? "OK" : "NO"));
+  const lines = [];
+  lines.push("[BindMember]");
+  lines.push(`token:${bindToken || "DEMO_TOKEN"}`);
+  lines.push(`name:${name}`);
+  lines.push(`phone:${phone}`);
+  lines.push(`address:${address}`);
+  lines.push(`note:${note}`);
 
-      if (name)   lines.push("姓名：" + name);
-      if (phone)  lines.push("手機：" + phone);
-      if (address) lines.push("地址：" + address);
-      if (note)   lines.push("備註：" + note);
-
-      // 先求有：把 OTP 一起送回 webhook（後面上正式版會拿掉，改 HTTP POST）
-      if (otp) lines.push("OTP：" + otp);
-
-      return lines.join("\n");
-    }
+  return lines.join("\n");
+}
 
     function updatePreview() {
       const text = buildMessageText();
