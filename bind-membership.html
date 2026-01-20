@@ -204,6 +204,7 @@ async function lookupDbNameByOaId(oaidValue) {
     const res = await fetch(url, { method: "GET", mode: "cors", cache: "no-store" });
     const data = await res.json().catch(() => ({}));
 
+    console.log(data)
     if (res.ok && data?.ok) {
       // ✅ 你目前的格式：{ ok:true, items:[{db_name:...}] }
       const first = Array.isArray(data.items) ? data.items[0] : null;
