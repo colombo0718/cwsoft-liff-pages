@@ -104,7 +104,7 @@
       <div class="section">
         <button type="submit" class="btn" id="btn-submit" disabled>
           <span class="icon">✅</span>
-          <span>送出，寫入 Line 訊息</span>
+          <span>送出資料</span>
         </button>
         <div class="status" id="status"></div>
       </div>
@@ -278,21 +278,44 @@
       refreshSubmitState();
     }
 
-    btnOtpSend.addEventListener("click", () => {
-      // 先求有：產生 6 位 OTP，顯示在提示 + console（正式版改成後端簡訊 API）
-      otpCode = randomDigits(6);
-      otpSentAt = Date.now();
-      otpVerified = false;
-      bindToken = "";
+    btnOtpSend.addEventListener("click", async () => {
+      // 先求有：不帶參數，直接叫後端 /otp 寄簡訊到你預設的手機
+      setPill(pillOtpSend, false, "發送中…");
+      btnOtpSend.disabled = true;
 
-      setPill(pillOtpSend, true, "已發送 ✅");
-      setPill(pillOtp, false, "尚未驗證");
+      try {
+        const res = await fetch("https://cwsoft.leaflune.org/otp", {
+          method: "GET",
+          mode: "cors",
+          cache: "no-store",
+        });
 
-      otpHint.style.display = "block";
-      otpHint.textContent = `Demo OTP：${otpCode}（正式版請改後端簡訊）`;
-      console.log("[DEMO OTP]", otpCode);
+        // 後端建議回 JSON：{ ok: true, ... }
+        const data = await res.json().catch(() => ({}));
 
-      refreshSubmitState();
+        if (!res.ok || data.ok === false) {
+          throw new Error(data.error || `HTTP ${res.status}`);
+        }
+
+        setPill(pillOtpSend, true, "已請求發送 ✅");
+
+        otpHint.style.display = "block";
+        otpHint.textContent = "已向後端請求發送 OTP 簡訊，請查看手機收件。";
+
+        // 先求有：先不做 verify（等你做 /otp/verify）
+        setPill(pillOtp, false, "尚未驗證");
+        btnOtpVerify.disabled = true;   // 先鎖住
+        otpInput.disabled = true;       // 先鎖住
+
+      } catch (err) {
+        console.error("call /otp failed:", err);
+        setPill(pillOtpSend, false, "發送失敗");
+        otpHint.style.display = "block";
+        otpHint.textContent = "呼叫 OTP 服務失敗，請稍後再試或檢查後端/CORS。";
+      } finally {
+        btnOtpSend.disabled = false;
+        refreshSubmitState();
+      }
     });
 
     btnOtpVerify.addEventListener("click", () => {
@@ -406,38 +429,15 @@
     // -------------------------
     // Submit -> sendMessages -> webhook
     // -------------------------
-    form.addEventListener("submit", async (event) => {
-      event.preventDefault();
+form.addEventListener("submit", async (event) => {
+  event.preventDefault();
 
-      statusEl.textContent = "";
-      statusEl.className = "status";
+  statusEl.textContent = "";
+  statusEl.className = "status";
 
-      if (!canSubmit()) {
-        statusEl.textContent = "請完成：姓名/手機、Captcha、OTP，並確保在 LINE 內開啟。";
-        statusEl.className = "status error";
-        return;
-      }
-
-      const text = buildBindMessageText();
-
-      try {
-        await liff.sendMessages([{ type: "text", text }]);
-
-        statusEl.textContent = "已送出綁定資料到 LINE（後端可用 webhook 直接腳本綁定）。";
-        statusEl.className = "status success";
-
-        // 送出後鎖一次，避免連點（你也可做更完整限速）
-        btnSubmit.disabled = true;
-
-        // 可選：關閉視窗
-        // setTimeout(() => liff.closeWindow(), 600);
-
-      } catch (err) {
-        console.error("sendMessages failed:", err);
-        statusEl.textContent = "送出失敗，請稍後再試。";
-        statusEl.className = "status error";
-      }
-    });
+  statusEl.textContent = "目前版本：不送 Line 訊息。已完成 OTP 取得流程（下一步再接 http post 綁定）。";
+  statusEl.className = "status success";
+});
 
     // 任一輸入改動時，刷新 submit 狀態
     [nameInput, phoneInput, addressInput, captchaInput, otpInput].forEach(el => {
