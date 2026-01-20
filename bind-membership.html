@@ -9,7 +9,6 @@
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <link rel="stylesheet" href="style.css">
   <style>
-    /* 只補最少量的排版（你也可以搬進 style.css） */
     .row { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
     .pill { display:inline-flex; align-items:center; gap:6px; padding:6px 10px; border-radius:999px; border:1px solid rgba(255,255,255,.15); font-size:13px; opacity:.95; }
     .pill.ok { background: rgba(46, 204, 113, .18); border-color: rgba(46,204,113,.35); }
@@ -20,6 +19,7 @@
     .captchaBox { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
     canvas { border-radius:12px; border:1px solid rgba(255,255,255,.15); background: rgba(0,0,0,.15); }
     input[disabled], button[disabled] { opacity:.5; filter:grayscale(.2); cursor:not-allowed; }
+    code { word-break: break-all; }
   </style>
 </head>
 
@@ -81,10 +81,10 @@
         </div>
       </div>
 
-      <!-- OTP 簡訊驗證（先求有：前端產生 OTP） -->
+      <!-- OTP 簡訊驗證 -->
       <div class="section">
         <div class="label-main">📱 OTP 簡訊驗證</div>
-        <div class="mini" style="margin:6px 0 10px;">先求有版：點「取得驗證碼」會在畫面提示/console 產生一組 OTP（之後再換成後端簡訊 API）</div>
+        <div class="mini" style="margin:6px 0 10px;">點「取得驗證碼」會呼叫後端 /otp 發送簡訊（目前不做 verify）</div>
 
         <div class="row" style="margin-bottom:10px;">
           <button type="button" class="btn small" id="btn-otp-send">取得驗證碼</button>
@@ -92,8 +92,8 @@
         </div>
 
         <div class="row">
-          <input id="otpInput" type="text" inputmode="numeric" maxlength="6" placeholder="輸入 6 位 OTP" style="flex:1; min-width:180px;">
-          <button type="button" class="btn small" id="btn-otp-verify">進行驗證</button>
+          <input id="otpInput" type="text" inputmode="numeric" maxlength="6" placeholder="輸入 6 位 OTP" style="flex:1; min-width:180px;" disabled>
+          <button type="button" class="btn small" id="btn-otp-verify" disabled>進行驗證</button>
           <span class="pill bad" id="pill-otp">尚未驗證</span>
         </div>
 
@@ -143,15 +143,15 @@
     let liffReady = false;
     let liffProfile = null;
 
-    // 先求有：captcha/otp 都在前端驗
+    // URL 參數
+    let oaid = "";
+    let dbName = ""; // 由 oa_lookup 取回
+
+    // captcha/otp（先求有）
     let captchaCode = "";
     let captchaVerified = false;
 
-    let otpCode = "";
-    let otpSentAt = 0;
     let otpVerified = false;
-
-    // 先求有：OTP 驗證成功後生成 token（正式版改成後端回傳 bind_token）
     let bindToken = "";
 
     function setPill(el, ok, text) {
@@ -170,19 +170,81 @@
     }
 
     function normalizePhone(phone) {
-      // 只留數字
       return (phone || "").replace(/\D/g, "");
     }
 
     function canSubmit() {
       const nameOk = !!nameInput.value.trim();
-      const phoneOk = normalizePhone(phoneInput.value.trim()).length >= 8; // 先求有：寬鬆
+      const phoneOk = normalizePhone(phoneInput.value.trim()).length >= 8;
       const liffOk = liffReady && window.liff && liff.isInClient();
       return liffOk && nameOk && phoneOk && captchaVerified && otpVerified && !!bindToken;
     }
 
     function refreshSubmitState() {
       btnSubmit.disabled = !canSubmit();
+    }
+
+    // -------------------------
+    // 讀 URL oaid
+    // -------------------------
+    function getOaIdFromUrl() {
+      const qs = new URLSearchParams(location.search);
+      return qs.get("oaid") || "";
+    }
+
+    // -------------------------
+    // 呼叫 sqlgate: oa_lookup -> db_name
+    // -------------------------
+    async function lookupDbNameByOaId(oaidValue) {
+      if (!oaidValue) return "";
+
+      // 先用 GET
+      try {
+        const url = `https://cwsoft.leaflune.org/sqlgate/oa_lookup?oaid=${encodeURIComponent(oaidValue)}`;
+        const res = await fetch(url, { method: "GET", mode: "cors", cache: "no-store" });
+        const data = await res.json().catch(() => ({}));
+        if (res.ok && data && (data.db_name || data.dbName)) {
+          return data.db_name || data.dbName;
+        }
+      } catch (_) {}
+
+      // fallback: POST JSON
+      try {
+        const res = await fetch("https://cwsoft.leaflune.org/sqlgate/oa_lookup", {
+          method: "POST",
+          mode: "cors",
+          cache: "no-store",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ oaid: oaidValue }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (res.ok && data && (data.db_name || data.dbName)) {
+          return data.db_name || data.dbName;
+        }
+      } catch (_) {}
+
+      return "";
+    }
+
+    // -------------------------
+    // 使用者資訊渲染
+    // -------------------------
+    function renderUser(profile) {
+      const rows = [];
+
+      rows.push(`<div>oaid：<code>${escapeHtml(oaid || "（未提供）")}</code></div>`);
+      rows.push(`<div>db_name：<code>${escapeHtml(dbName || "（查詢中/尚未取得）")}</code></div>`);
+
+      if (!profile) {
+        rows.push(`<div>uid：<code>（尚未取得）</code></div>`);
+        userBodyEl.innerHTML = rows.join("");
+        return;
+      }
+
+      rows.push(`<div>displayName：<b>${escapeHtml(profile.displayName)}</b></div>`);
+      rows.push(`<div>uid：<code>${escapeHtml(profile.userId)}</code></div>`);
+
+      userBodyEl.innerHTML = rows.join("");
     }
 
     // -------------------------
@@ -199,12 +261,10 @@
       const w = captchaCanvas.width;
       const h = captchaCanvas.height;
 
-      // 背景
       ctx.clearRect(0, 0, w, h);
       ctx.fillStyle = "rgba(255,255,255,0.06)";
       ctx.fillRect(0, 0, w, h);
 
-      // 雜線
       for (let i = 0; i < 10; i++) {
         ctx.strokeStyle = `rgba(255,255,255,${0.08 + Math.random() * 0.12})`;
         ctx.beginPath();
@@ -213,7 +273,6 @@
         ctx.stroke();
       }
 
-      // 文字
       ctx.font = "bold 34px system-ui, -apple-system, Segoe UI, Roboto";
       ctx.textBaseline = "middle";
       for (let i = 0; i < code.length; i++) {
@@ -229,7 +288,6 @@
         ctx.restore();
       }
 
-      // 雜點
       for (let i = 0; i < 60; i++) {
         ctx.fillStyle = `rgba(255,255,255,${0.05 + Math.random() * 0.12})`;
         ctx.fillRect(Math.random() * w, Math.random() * h, 1.5, 1.5);
@@ -261,11 +319,9 @@
     });
 
     // -------------------------
-    // OTP（先求有：前端產生）
+    // OTP：呼叫後端 /otp（先求有：只發送）
     // -------------------------
     function resetOtp() {
-      otpCode = "";
-      otpSentAt = 0;
       otpVerified = false;
       bindToken = "";
 
@@ -275,11 +331,14 @@
 
       setPill(pillOtpSend, false, "尚未發送");
       setPill(pillOtp, false, "尚未驗證");
+
+      otpInput.disabled = true;
+      btnOtpVerify.disabled = true;
+
       refreshSubmitState();
     }
 
     btnOtpSend.addEventListener("click", async () => {
-      // 先求有：不帶參數，直接叫後端 /otp 寄簡訊到你預設的手機
       setPill(pillOtpSend, false, "發送中…");
       btnOtpSend.disabled = true;
 
@@ -290,22 +349,14 @@
           cache: "no-store",
         });
 
-        // 後端建議回 JSON：{ ok: true, ... }
         const data = await res.json().catch(() => ({}));
-
         if (!res.ok || data.ok === false) {
           throw new Error(data.error || `HTTP ${res.status}`);
         }
 
         setPill(pillOtpSend, true, "已請求發送 ✅");
-
         otpHint.style.display = "block";
         otpHint.textContent = "已向後端請求發送 OTP 簡訊，請查看手機收件。";
-
-        // 先求有：先不做 verify（等你做 /otp/verify）
-        setPill(pillOtp, false, "尚未驗證");
-        btnOtpVerify.disabled = true;   // 先鎖住
-        otpInput.disabled = true;       // 先鎖住
 
       } catch (err) {
         console.error("call /otp failed:", err);
@@ -318,79 +369,29 @@
       }
     });
 
-    btnOtpVerify.addEventListener("click", () => {
-      const v = (otpInput.value || "").trim();
-      if (!otpCode) {
-        setPill(pillOtp, false, "請先取得驗證碼");
-        return;
-      }
-
-      // 簡單有效期（先求有）：5 分鐘
-      const expired = (Date.now() - otpSentAt) > 5 * 60 * 1000;
-      if (expired) {
-        setPill(pillOtp, false, "已過期，請重發");
-        resetOtp();
-        return;
-      }
-
-      if (v === otpCode) {
-        otpVerified = true;
-        setPill(pillOtp, true, "驗證成功 ✅");
-
-        // 先求有：OTP 成功後產生 token（正式版：後端回 bind_token）
-        bindToken = `DEMO_${Date.now()}_${Math.random().toString(16).slice(2, 10)}`;
-
-      } else {
-        otpVerified = false;
-        setPill(pillOtp, false, "錯誤，請重試");
-      }
-      refreshSubmitState();
-    });
-
     // -------------------------
-    // Message Format: [BindMember]
+    // LIFF init：取得 uid + 顯示 oaid + 查 db_name
     // -------------------------
-    function buildBindMessageText() {
-      const name = nameInput.value.trim();
-      const phone = normalizePhone(phoneInput.value.trim());
-      const address = addressInput.value.trim();
-
-      const lines = [];
-      lines.push("[BindMember]");
-      lines.push(`token:${bindToken || ""}`);
-      lines.push(`name:${name}`);
-      lines.push(`phone:${phone}`);
-      lines.push(`address:${address}`);
-      return lines.join("\n");
-    }
-
-    // -------------------------
-    // LIFF init
-    // -------------------------
-    function getOaIdFromUrl() {
-      const qs = new URLSearchParams(location.search);
-      return qs.get("oaid") || "";
-    }
-
-    function renderUser(profile) {
-      const oaid = getOaIdFromUrl();
-
-      const rows = [];
-      rows.push(`<div>oaid：<code>${escapeHtml(oaid || "（未提供）")}</code></div>`);
-
-      if (!profile) {
-        rows.push(`<div>uid：<code>（尚未取得）</code></div>`);
-        userBodyEl.innerHTML = rows.join("");
-        return;
-      }
-
-      rows.push(`<div>displayName：<b>${escapeHtml(profile.displayName)}</b></div>`);
-      rows.push(`<div>uid：<code>${escapeHtml(profile.userId)}</code></div>`);
-
-      userBodyEl.innerHTML = rows.join("");
-    }
-
     async function initLiff() {
+      oaid = getOaIdFromUrl();     // 先拿到 oaid
+      renderUser(null);            // 先畫一次（顯示 oaid / db_name 查詢中）
+
+      // 先做 db_name lookup（不依賴 LIFF）
+      if (oaid) {
+        try {
+          dbName = "查詢中…";
+          renderUser(null);
+
+          const found = await lookupDbNameByOaId(oaid);
+          dbName = found || "（查無對應）";
+        } catch (e) {
+          console.error("oa_lookup failed:", e);
+          dbName = "（查詢失敗）";
+        } finally {
+          renderUser(liffProfile); // 有/無 profile 都重畫一次
+        }
+      }
+
       if (!window.liff) {
         setPill(pillLiff, false, "LIFF：找不到 SDK");
         setPill(pillClient, false, "Client：未知");
@@ -407,7 +408,6 @@
 
         if (!liff.isLoggedIn()) {
           setPill(pillLogin, false, "Login：未登入");
-          // 外部瀏覽器會需要登入；在 LINE 內通常已登入
           liff.login();
           return;
         }
@@ -417,7 +417,7 @@
         liffProfile = await liff.getProfile();
         renderUser(liffProfile);
 
-        // 你說「使用者資料就把姓名直接寫進去」→ 自動帶 displayName
+        // 自動把 displayName 帶入姓名
         if (!nameInput.value.trim() && liffProfile?.displayName) {
           nameInput.value = liffProfile.displayName;
         }
@@ -438,19 +438,15 @@
     }
 
     // -------------------------
-    // Submit -> sendMessages -> webhook
+    // Submit（目前不送 Line）
     // -------------------------
-form.addEventListener("submit", async (event) => {
-  event.preventDefault();
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      statusEl.textContent = "目前版本：不送 Line 訊息。";
+      statusEl.className = "status success";
+    });
 
-  statusEl.textContent = "";
-  statusEl.className = "status";
-
-  statusEl.textContent = "目前版本：不送 Line 訊息。已完成 OTP 取得流程（下一步再接 http post 綁定）。";
-  statusEl.className = "status success";
-});
-
-    // 任一輸入改動時，刷新 submit 狀態
+    // input 改動刷新狀態
     [nameInput, phoneInput, addressInput, captchaInput, otpInput].forEach(el => {
       el.addEventListener("input", refreshSubmitState);
     });
