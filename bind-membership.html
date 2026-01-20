@@ -195,36 +195,52 @@
     // -------------------------
     // 呼叫 sqlgate: oa_lookup -> db_name
     // -------------------------
-    async function lookupDbNameByOaId(oaidValue) {
-      if (!oaidValue) return "";
+async function lookupDbNameByOaId(oaidValue) {
+  if (!oaidValue) return "";
 
-      // 先用 GET
-      try {
-        const url = `https://cwsoft.leaflune.org/sqlgate/oa_lookup?oaid=${encodeURIComponent(oaidValue)}`;
-        const res = await fetch(url, { method: "GET", mode: "cors", cache: "no-store" });
-        const data = await res.json().catch(() => ({}));
-        if (res.ok && data && (data.db_name || data.dbName)) {
-          return data.db_name || data.dbName;
-        }
-      } catch (_) {}
+  // 先用 GET
+  try {
+    const url = `https://cwsoft.leaflune.org/sqlgate/oa_lookup?oaid=${encodeURIComponent(oaidValue)}`;
+    const res = await fetch(url, { method: "GET", mode: "cors", cache: "no-store" });
+    const data = await res.json().catch(() => ({}));
 
-      // fallback: POST JSON
-      try {
-        const res = await fetch("https://cwsoft.leaflune.org/sqlgate/oa_lookup", {
-          method: "POST",
-          mode: "cors",
-          cache: "no-store",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ oaid: oaidValue }),
-        });
-        const data = await res.json().catch(() => ({}));
-        if (res.ok && data && (data.db_name || data.dbName)) {
-          return data.db_name || data.dbName;
-        }
-      } catch (_) {}
+    if (res.ok && data?.ok) {
+      // ✅ 你目前的格式：{ ok:true, items:[{db_name:...}] }
+      const first = Array.isArray(data.items) ? data.items[0] : null;
+      if (first?.db_name) return first.db_name;
 
-      return "";
+      // 兼容：未來若改成直接回傳 db_name
+      if (data.db_name) return data.db_name;
+      if (data.dbName) return data.dbName;
     }
+  } catch (e) {
+    console.error("oa_lookup GET failed:", e);
+  }
+
+  // fallback: POST JSON（如果你之後有做）
+  try {
+    const res = await fetch("https://cwsoft.leaflune.org/sqlgate/oa_lookup", {
+      method: "POST",
+      mode: "cors",
+      cache: "no-store",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ oaid: oaidValue }),
+    });
+    const data = await res.json().catch(() => ({}));
+
+    if (res.ok && data?.ok) {
+      const first = Array.isArray(data.items) ? data.items[0] : null;
+      if (first?.db_name) return first.db_name;
+
+      if (data.db_name) return data.db_name;
+      if (data.dbName) return data.dbName;
+    }
+  } catch (e) {
+    console.error("oa_lookup POST failed:", e);
+  }
+
+  return "";
+}
 
     // -------------------------
     // 使用者資訊渲染
