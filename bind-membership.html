@@ -367,16 +367,27 @@
     // -------------------------
     // LIFF init
     // -------------------------
+    function getOaIdFromUrl() {
+      const qs = new URLSearchParams(location.search);
+      return qs.get("oaid") || "";
+    }
+
     function renderUser(profile) {
+      const oaid = getOaIdFromUrl();
+
+      const rows = [];
+      rows.push(`<div>oaid：<code>${escapeHtml(oaid || "（未提供）")}</code></div>`);
+
       if (!profile) {
-        userBodyEl.textContent = "（尚未取得使用者資料）";
+        rows.push(`<div>uid：<code>（尚未取得）</code></div>`);
+        userBodyEl.innerHTML = rows.join("");
         return;
       }
 
-      userBodyEl.innerHTML = `
-        <div>displayName：<b>${escapeHtml(profile.displayName)}</b></div>
-        <div>userId：<code>${escapeHtml(profile.userId)}</code></div>
-      `;
+      rows.push(`<div>displayName：<b>${escapeHtml(profile.displayName)}</b></div>`);
+      rows.push(`<div>uid：<code>${escapeHtml(profile.userId)}</code></div>`);
+
+      userBodyEl.innerHTML = rows.join("");
     }
 
     async function initLiff() {
