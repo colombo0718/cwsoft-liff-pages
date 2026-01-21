@@ -324,3 +324,34 @@ canvas {
     padding: 18px 14px 16px;
   }
 }
+
+/* Debug / 除錯資訊：簡化顯示 */
+details.debug > summary {
+  cursor: pointer;
+  color: var(--text-sub);
+  font-size: 12px;
+  user-select: none;
+}
+
+.debug-lines {
+  margin-top: 8px;
+  font-size: 12px;
+  line-height: 1.65;
+  color: var(--text-sub);
+}
+
+.debug-lines > div {
+  padding: 2px 0;
+}
+
+.debug-lines code {
+  color: var(--text-main);
+}
+
+.debug-extra {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px dashed rgba(255,255,255,.12);
+  color: var(--text-sub);
+}
+
