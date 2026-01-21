@@ -216,6 +216,17 @@
       btnSubmit.disabled = !canSubmit();
     }
 
+    function autofillNameFromLineProfile() {
+      if (!liffProfile?.displayName) return;
+
+      // 如果使用者已輸入，就不要硬覆蓋
+      const current = (nameInput.value || "").trim();
+      if (current.length > 0) return;
+
+      nameInput.value = liffProfile.displayName.trim();
+      dbg(`autofill name <- ${liffProfile.displayName}`);
+    }
+
     // ====== OA lookup ======
     async function lookupDbNameByOaId(oaidValue) {
       if (!oaidValue) {
@@ -359,6 +370,8 @@
       try {
         liffProfile = await liff.getProfile();
         dbg(`profile ok: displayName=${liffProfile.displayName}, uid=${liffProfile.userId}`);
+        autofillNameFromLineProfile();
+        refreshSubmitState(); // 填入後順便更新送出按鈕狀態
       } catch (e) {
         dbg(`getProfile failed: ${e?.message || e}`);
         setStatus("取得使用者資訊失敗", "error");
