@@ -208,7 +208,7 @@
         const url = `${API_OA_LOOKUP}?oaid=${encodeURIComponent(oaidValue)}`;
         const res = await fetch(url, { method: "GET", mode: "cors", cache: "no-store" });
         const data = await res.json().catch(() => ({}));
-
+        console.log(data)
         if (!res.ok || !data?.ok) {
           dbName = "（查詢失敗）";
           dbg(`oa_lookup failed: HTTP ${res.status} / ${data?.error || "unknown"}`);
