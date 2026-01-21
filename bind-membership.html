@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>綁定會員</title>
 
-  <!-- 外部 CSS（你已把 <style> 全搬走） -->
+  <!-- 你已移除 <style>：只用外部 CSS -->
   <link rel="stylesheet" href="./style.css" />
 
   <!-- LIFF SDK -->
@@ -25,7 +25,7 @@
 
     <div class="hint">
       請填寫會員資料並完成驗證。<br />
-      <span class="hintline">※ 這頁會自動判斷是否已綁定，已綁定將鎖定輸入。</span>
+      <span class="hintline">※ 系統會自動判斷是否已綁定；已綁定將鎖定輸入。</span>
     </div>
 
     <form id="member-form" autocomplete="off">
@@ -47,36 +47,49 @@
 
       <!-- CAPTCHA -->
       <div class="section">
-        <div class="mini">🛡️ 防機器人驗證</div>
-        <div class="mini">請輸入圖片中的 4 位數字（先求有版，前端隨機產生）</div>
+        <div class="mini">🛡️ 防機器人驗證（圖片碼）</div>
+        <div class="mini">請輸入圖片中的 4 位數字（先求有：前端隨機產生）</div>
 
         <div class="captchaBox" style="margin-top:10px;">
           <canvas id="captchaCanvas" width="170" height="56"></canvas>
           <button type="button" class="btn small" id="btn-captcha-refresh">換一張</button>
         </div>
 
-        <div class="row" style="margin-top:10px;">
-          <input id="captchaInput" type="text" inputmode="numeric" placeholder="輸入四位數字" maxlength="4" style="flex:1; min-width:180px;" />
-          <button type="button" class="btn small" id="btn-captcha-verify">驗證</button>
+        <!-- 這行用 inline flex，避免依賴 .row -->
+        <div style="margin-top:10px; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+          <input id="captchaInput"
+                 type="text"
+                 inputmode="numeric"
+                 placeholder="輸入四位數字"
+                 maxlength="4"
+                 style="flex:1; min-width:180px;" />
+          <button type="button" class="btn small" id="btn-captcha-verify">驗證圖片碼</button>
+          <span id="captchaVerifyStatus"
+                style="font-size:12px; color:var(--muted); min-width:90px;">尚未驗證</span>
         </div>
       </div>
 
       <!-- OTP -->
       <div class="section">
         <div class="mini">📲 OTP 簡訊驗證</div>
-        <div class="mini" id="otpHint">
-          點「取得驗證碼」會呼叫後端 /otp 送簡訊（目前先求有：不做 verify）。
+        <div class="mini">
+          點「取得 OTP」會呼叫後端 /otp 發送簡訊（目前先求有：verify 先用格式判斷）。
         </div>
 
-        <div class="row" style="margin-top:10px;">
-          <button type="button" class="btn small" id="btn-otp-send">取得驗證碼</button>
-          <span class="mini" id="otpSendStatus">尚未發送</span>
+        <div style="margin-top:10px; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+          <button type="button" class="btn small" id="btn-otp-send">取得 OTP</button>
+          <span id="otpSendStatus" style="font-size:12px; color:var(--muted); min-width:120px;">尚未發送</span>
         </div>
 
-        <div class="row" style="margin-top:10px;">
-          <input id="otpInput" type="text" inputmode="numeric" placeholder="輸入 6 位 OTP" maxlength="6" style="flex:1; min-width:180px;" />
-          <button type="button" class="btn small" id="btn-otp-verify">進行驗證</button>
-          <span class="mini" id="otpVerifyStatus">尚未驗證</span>
+        <div style="margin-top:10px; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+          <input id="otpInput"
+                 type="text"
+                 inputmode="numeric"
+                 placeholder="輸入 6 位 OTP"
+                 maxlength="6"
+                 style="flex:1; min-width:180px;" />
+          <button type="button" class="btn small" id="btn-otp-verify">驗證 OTP</button>
+          <span id="otpVerifyStatus" style="font-size:12px; color:var(--muted); min-width:90px;">尚未驗證</span>
         </div>
       </div>
 
@@ -86,10 +99,12 @@
           <span class="icon">✅</span>
           <span>送出資料</span>
         </button>
+
+        <!-- 這裡只放「頁面級」訊息：LIFF/綁定鎖定/後端錯誤，不放各按鈕結果 -->
         <div class="status" id="status"></div>
       </div>
 
-      <!-- Debug terminal（只有一個框，不給一般 user 用） -->
+      <!-- Debug terminal：工程用 -->
       <div class="section">
         <div class="mini">Debug（工程用）</div>
         <pre id="debug"
@@ -105,12 +120,15 @@
     const API_OA_LOOKUP = "https://cwsoft.leaflune.org/sqlgate/oa_lookup";
     const API_IS_BIND  = "https://cwsoft.leaflune.org/sqlgate/is_bind_member";
     const API_OTP      = "https://cwsoft.leaflune.org/otp";
+    // TODO: 之後接真正綁定 API
+    // const API_BIND     = "https://cwsoft.leaflune.org/sqlgate/bind_member";
 
     // 先求有：你之後會換成後端的一次性 token
     let bindToken = "DUMMY_TOKEN";
 
-    // ====== DOM (盡量少抓) ======
+    // ====== DOM ======
     const $ = (id) => document.getElementById(id);
+
     const form = $("member-form");
     const nameInput = $("name");
     const phoneInput = $("phone");
@@ -120,6 +138,7 @@
     const btnCaptchaRefresh = $("btn-captcha-refresh");
     const captchaInput = $("captchaInput");
     const btnCaptchaVerify = $("btn-captcha-verify");
+    const captchaVerifyStatus = $("captchaVerifyStatus");
 
     const btnOtpSend = $("btn-otp-send");
     const otpSendStatus = $("otpSendStatus");
@@ -129,8 +148,6 @@
 
     const btnSubmit = $("btn-submit");
     const statusEl = $("status");
-
-    // Debug terminal：只抓這一個
     const debugEl = $("debug");
 
     // ====== State ======
@@ -160,23 +177,20 @@
       statusEl.textContent = text || "";
     }
 
-    function escapeHtml(str) {
-      return String(str ?? "")
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
+    function setInline(el, text, type) {
+      el.textContent = text;
+      // 不搞 fancy pill：只用顏色區分
+      if (type === "ok") el.style.color = "#bbf7d0";
+      else if (type === "bad") el.style.color = "#fecaca";
+      else el.style.color = "var(--muted)";
     }
 
     function normalizePhone(raw) {
-      const s = String(raw || "").trim().replaceAll(" ", "").replaceAll("-", "");
-      return s;
+      return String(raw || "").trim().replaceAll(" ", "").replaceAll("-", "");
     }
 
     function getOaIdFromUrl() {
       const u = new URL(location.href);
-      // 你目前用 ?oaid=...
       return (u.searchParams.get("oaid") || "").trim();
     }
 
@@ -185,11 +199,16 @@
       [btnCaptchaRefresh, btnCaptchaVerify, btnOtpSend, btnOtpVerify, btnSubmit].forEach(el => el.disabled = true);
     }
 
+    function dbLooksOk(db) {
+      if (!db) return false;
+      return !db.includes("查無") && !db.includes("失敗") && !db.includes("未提供");
+    }
+
     function canSubmit() {
       const nameOk = nameInput.value.trim().length > 0;
       const phoneOk = normalizePhone(phoneInput.value).length >= 10; // 先求有
       const liffOk = liffReady && window.liff && liff.isLoggedIn() && liffProfile?.userId;
-      const oaOk = !!oaid && !!dbName && !dbName.includes("查無") && !dbName.includes("失敗") && !dbName.includes("未提供");
+      const oaOk = !!oaid && dbLooksOk(dbName);
       return !!liffOk && nameOk && phoneOk && captchaVerified && otpVerified && !!bindToken && oaOk && !isBound;
     }
 
@@ -208,13 +227,14 @@
         const url = `${API_OA_LOOKUP}?oaid=${encodeURIComponent(oaidValue)}`;
         const res = await fetch(url, { method: "GET", mode: "cors", cache: "no-store" });
         const data = await res.json().catch(() => ({}));
-        console.log(data)
+
         if (!res.ok || !data?.ok) {
           dbName = "（查詢失敗）";
           dbg(`oa_lookup failed: HTTP ${res.status} / ${data?.error || "unknown"}`);
           return;
         }
 
+        // 你已改回傳格式：外層 db_name
         dbName = data?.db_name || "（查無對應）";
         dbg(`oa_lookup ok -> oaid=${oaidValue}, db_name=${dbName}`);
       } catch (e) {
@@ -225,7 +245,6 @@
 
     // ====== is_bind_member ======
     async function checkIsBindMember(oaidValue, uidValue) {
-      if (!oaidValue || !uidValue) return { ok:false, error:"missing params" };
       const url = `${API_IS_BIND}?oaid=${encodeURIComponent(oaidValue)}&uid=${encodeURIComponent(uidValue)}`;
       const res = await fetch(url, { method: "GET", mode: "cors", cache: "no-store" });
       const data = await res.json().catch(() => ({}));
@@ -233,7 +252,7 @@
       return data;
     }
 
-    // ====== CAPTCHA ======
+    // ====== CAPTCHA (less neat) ======
     function randomDigits(n) {
       let out = "";
       for (let i = 0; i < n; i++) out += Math.floor(Math.random() * 10);
@@ -245,7 +264,7 @@
       const w = captchaCanvas.width, h = captchaCanvas.height;
       ctx.clearRect(0, 0, w, h);
 
-      // bg
+      // background
       ctx.fillStyle = "rgba(255,255,255,0.04)";
       ctx.fillRect(0, 0, w, h);
 
@@ -258,14 +277,28 @@
         ctx.stroke();
       }
 
-      // text
-      ctx.font = "bold 34px system-ui, -apple-system, Segoe UI";
-      ctx.fillStyle = "rgba(255,255,255,0.92)";
-      ctx.textBaseline = "middle";
-      ctx.fillText(code, 18, h / 2 + 2);
+      // digits (draw individually with jitter + rotate)
+      const baseX = 16;
+      const step = 34;
+      for (let i = 0; i < code.length; i++) {
+        const ch = code[i];
+        const x = baseX + i * step + (Math.random() * 6 - 3);
+        const y = h / 2 + (Math.random() * 10 - 5);
+        const angle = (Math.random() * 0.5 - 0.25);
+        const size = 30 + Math.floor(Math.random() * 8);
+
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.rotate(angle);
+        ctx.font = `800 ${size}px system-ui, -apple-system, Segoe UI`;
+        ctx.fillStyle = "rgba(255,255,255,0.92)";
+        ctx.textBaseline = "middle";
+        ctx.fillText(ch, 0, 0);
+        ctx.restore();
+      }
 
       // dots
-      for (let i = 0; i < 80; i++) {
+      for (let i = 0; i < 90; i++) {
         ctx.fillStyle = `rgba(255,255,255,${0.05 + Math.random() * 0.12})`;
         ctx.fillRect(Math.random() * w, Math.random() * h, 1.5, 1.5);
       }
@@ -276,6 +309,7 @@
       captchaVerified = false;
       captchaInput.value = "";
       drawCaptcha(captchaCode);
+      setInline(captchaVerifyStatus, "尚未驗證", "");
       dbg("CAPTCHA reset");
       refreshSubmitState();
     }
@@ -284,8 +318,8 @@
     function resetOtp() {
       otpVerified = false;
       otpInput.value = "";
-      otpSendStatus.textContent = "尚未發送";
-      otpVerifyStatus.textContent = "尚未驗證";
+      setInline(otpSendStatus, "尚未發送", "");
+      setInline(otpVerifyStatus, "尚未驗證", "");
       refreshSubmitState();
     }
 
@@ -368,49 +402,48 @@
     }
 
     // ====== Events ======
-    btnCaptchaRefresh.addEventListener("click", () => {
-      resetCaptcha();
-    });
+    btnCaptchaRefresh.addEventListener("click", () => resetCaptcha());
 
     btnCaptchaVerify.addEventListener("click", () => {
       const v = (captchaInput.value || "").trim();
       if (v === captchaCode) {
         captchaVerified = true;
         dbg("CAPTCHA：驗證成功");
-        setStatus("CAPTCHA 驗證成功", "success");
+        setInline(captchaVerifyStatus, "驗證成功", "ok");
       } else {
         captchaVerified = false;
         dbg(`CAPTCHA：驗證失敗 (input=${v || "empty"})`);
-        setStatus("CAPTCHA 驗證失敗，請再試一次", "error");
+        setInline(captchaVerifyStatus, "驗證失敗", "bad");
+        // 可選：失敗就換一張，降低暴力嘗試
+        resetCaptcha();
       }
       refreshSubmitState();
     });
 
     btnOtpSend.addEventListener("click", async () => {
-      // 先求有：目前 /otp 沒帶 phone；你之後會改成 /otp/send 並帶 phone/oaid/uid
-      otpSendStatus.textContent = "發送中…";
+      setInline(otpSendStatus, "發送中…", "");
       dbg("OTP：send request...");
       try {
         const res = await fetch(API_OTP, { method: "GET", mode: "cors", cache: "no-store" });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        otpSendStatus.textContent = "已發送（先求有）";
+        setInline(otpSendStatus, "已發送（先求有）", "ok");
         dbg("OTP：send ok");
       } catch (e) {
-        otpSendStatus.textContent = "發送失敗";
+        setInline(otpSendStatus, "發送失敗", "bad");
         dbg(`OTP：send failed: ${e?.message || e}`);
       }
     });
 
     btnOtpVerify.addEventListener("click", () => {
-      // 先求有：只做長度判斷（你之後接後端 verify）
+      // 先求有：只做格式判斷（你之後接後端 verify）
       const v = (otpInput.value || "").trim();
       if (/^\d{6}$/.test(v)) {
         otpVerified = true;
-        otpVerifyStatus.textContent = "已驗證（先求有）";
+        setInline(otpVerifyStatus, "驗證成功（先求有）", "ok");
         dbg("OTP：verify ok (frontend stub)");
       } else {
         otpVerified = false;
-        otpVerifyStatus.textContent = "驗證失敗";
+        setInline(otpVerifyStatus, "驗證失敗", "bad");
         dbg("OTP：verify failed (need 6 digits)");
       }
       refreshSubmitState();
@@ -433,8 +466,6 @@
         phone: normalizePhone(phoneInput.value),
         address: addressInput.value.trim(),
         bind_token: bindToken,
-
-        // 你之後若要後端驗證身分，建議帶：
         id_token: (window.liff?.getIDToken?.() || ""),
         access_token: (window.liff?.getAccessToken?.() || "")
       };
@@ -442,7 +473,7 @@
       dbg("submit payload:");
       dbg(JSON.stringify(payload));
 
-      // TODO：接你真正的 bind API
+      // TODO: 接後端綁定 API
       setStatus("送出流程待接後端綁定 API（目前只輸出 debug log）", "");
     });
 
