@@ -1,13 +1,15 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-  <meta charset="UTF-8" />
-  <title>綁定會員</title>
+  <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>綁定會員</title>
+
+  <!-- 外部 CSS（你已把 <style> 全搬走） -->
+  <link rel="stylesheet" href="./style.css" />
 
   <!-- LIFF SDK -->
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-  <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
@@ -21,31 +23,21 @@
       <div class="badge">Demo</div>
     </div>
 
-    <!-- 使用者資訊 -->
-    <div class="preview" style="margin-top:12px;">
-      <div class="preview-title">👤 使用者資訊</div>
-
-      <div class="row" style="margin:8px 0 10px;">
-        <span class="pill neu" id="pill-liff">LIFF：初始化中…</span>
-        <span class="pill neu" id="pill-client">Client：判斷中…</span>
-        <span class="pill neu" id="pill-login">Login：判斷中…</span>
-        <span class="pill neu" id="pill-bind">Bind：查詢中…</span>
-      </div>
-
-      <div id="user-body" class="mini">（尚未取得使用者資料）</div>
-      <div id="bind-extra" class="mini hintline" style="display:none;"></div>
+    <div class="hint">
+      請填寫會員資料並完成驗證。<br />
+      <span class="hintline">※ 這頁會自動判斷是否已綁定，已綁定將鎖定輸入。</span>
     </div>
 
-    <!-- 表單 -->
-    <form id="member-form" class="section">
+    <form id="member-form" autocomplete="off">
+      <!-- 基本資料 -->
       <label>
         <div class="label-main">姓名 <span class="required">*</span></div>
-        <input id="name" type="text" placeholder="例如：王小明" required />
+        <input id="name" type="text" placeholder="例如：趙士豪" />
       </label>
 
       <label>
         <div class="label-main">手機號碼 <span class="required">*</span></div>
-        <input id="phone" type="tel" inputmode="numeric" placeholder="例如：0912-345-678" required />
+        <input id="phone" type="tel" placeholder="例如：0912-345-678" />
       </label>
 
       <label>
@@ -53,40 +45,39 @@
         <input id="address" type="text" placeholder="例如：台南市東區成功路 123 號" />
       </label>
 
-      <!-- 防機器人驗證 -->
+      <!-- CAPTCHA -->
       <div class="section">
-        <div class="label-main">🛡️ 防機器人驗證</div>
-        <div class="mini" style="margin:6px 0 10px;">請輸入圖片中的 4 位數字（先求有版：前端隨機產生）</div>
+        <div class="mini">🛡️ 防機器人驗證</div>
+        <div class="mini">請輸入圖片中的 4 位數字（先求有版，前端隨機產生）</div>
 
-        <div class="captchaBox">
-          <canvas id="captchaCanvas" width="160" height="56" aria-label="captcha"></canvas>
+        <div class="captchaBox" style="margin-top:10px;">
+          <canvas id="captchaCanvas" width="170" height="56"></canvas>
           <button type="button" class="btn small" id="btn-captcha-refresh">換一張</button>
         </div>
 
         <div class="row" style="margin-top:10px;">
-          <input id="captchaInput" type="text" inputmode="numeric" maxlength="4" placeholder="輸入四位數字" style="flex:1; min-width:160px;">
+          <input id="captchaInput" type="text" inputmode="numeric" placeholder="輸入四位數字" maxlength="4" style="flex:1; min-width:180px;" />
           <button type="button" class="btn small" id="btn-captcha-verify">驗證</button>
-          <span class="pill bad" id="pill-captcha">尚未驗證</span>
         </div>
       </div>
 
       <!-- OTP -->
       <div class="section">
-        <div class="label-main">📱 OTP 簡訊驗證</div>
-        <div class="mini" style="margin:6px 0 10px;">點「取得驗證碼」會呼叫後端 /otp 發送簡訊（目前先求有：不做 verify）</div>
+        <div class="mini">📲 OTP 簡訊驗證</div>
+        <div class="mini" id="otpHint">
+          點「取得驗證碼」會呼叫後端 /otp 送簡訊（目前先求有：不做 verify）。
+        </div>
 
-        <div class="row" style="margin-bottom:10px;">
+        <div class="row" style="margin-top:10px;">
           <button type="button" class="btn small" id="btn-otp-send">取得驗證碼</button>
-          <span class="pill bad" id="pill-otp-send">尚未發送</span>
+          <span class="mini" id="otpSendStatus">尚未發送</span>
         </div>
 
-        <div class="row">
-          <input id="otpInput" type="text" inputmode="numeric" maxlength="6" placeholder="輸入 6 位 OTP" style="flex:1; min-width:180px;" disabled>
-          <button type="button" class="btn small" id="btn-otp-verify" disabled>進行驗證</button>
-          <span class="pill bad" id="pill-otp">尚未驗證</span>
+        <div class="row" style="margin-top:10px;">
+          <input id="otpInput" type="text" inputmode="numeric" placeholder="輸入 6 位 OTP" maxlength="6" style="flex:1; min-width:180px;" />
+          <button type="button" class="btn small" id="btn-otp-verify">進行驗證</button>
+          <span class="mini" id="otpVerifyStatus">尚未驗證</span>
         </div>
-
-        <div class="mini" id="otpHint" style="margin-top:8px; display:none;"></div>
       </div>
 
       <!-- 送出 -->
@@ -97,74 +88,80 @@
         </button>
         <div class="status" id="status"></div>
       </div>
+
+      <!-- Debug terminal（只有一個框，不給一般 user 用） -->
+      <div class="section">
+        <div class="mini">Debug（工程用）</div>
+        <pre id="debug"
+             style="margin:8px 0 0; padding:10px; border-radius:12px; border:1px solid rgba(255,255,255,0.12); background:rgba(0,0,0,0.18); max-height:180px; overflow:auto;"
+        >[debug] boot...</pre>
+      </div>
     </form>
   </div>
 
   <script>
-    const LIFF_ID = "2008039127-p7We0QWm"; // 換成你的 LIFF ID
-
-    // ---- endpoints ----
+    // ====== Config ======
+    const LIFF_ID = "2008039127-p7We0QWm"; // 你的 LIFF ID
     const API_OA_LOOKUP = "https://cwsoft.leaflune.org/sqlgate/oa_lookup";
-    const API_IS_BIND   = "https://cwsoft.leaflune.org/sqlgate/is_bind_member";
-    const API_OTP       = "https://cwsoft.leaflune.org/otp";
+    const API_IS_BIND  = "https://cwsoft.leaflune.org/sqlgate/is_bind_member";
+    const API_OTP      = "https://cwsoft.leaflune.org/otp";
 
-    // ---- DOM ----
-    const form = document.getElementById("member-form");
-    const statusEl = document.getElementById("status");
+    // 先求有：你之後會換成後端的一次性 token
+    let bindToken = "DUMMY_TOKEN";
 
-    const pillLiff = document.getElementById("pill-liff");
-    const pillClient = document.getElementById("pill-client");
-    const pillLogin = document.getElementById("pill-login");
-    const pillBind = document.getElementById("pill-bind");
+    // ====== DOM (盡量少抓) ======
+    const $ = (id) => document.getElementById(id);
+    const form = $("member-form");
+    const nameInput = $("name");
+    const phoneInput = $("phone");
+    const addressInput = $("address");
 
-    const userBodyEl = document.getElementById("user-body");
-    const bindExtraEl = document.getElementById("bind-extra");
+    const captchaCanvas = $("captchaCanvas");
+    const btnCaptchaRefresh = $("btn-captcha-refresh");
+    const captchaInput = $("captchaInput");
+    const btnCaptchaVerify = $("btn-captcha-verify");
 
-    const nameInput = document.getElementById("name");
-    const phoneInput = document.getElementById("phone");
-    const addressInput = document.getElementById("address");
+    const btnOtpSend = $("btn-otp-send");
+    const otpSendStatus = $("otpSendStatus");
+    const otpInput = $("otpInput");
+    const btnOtpVerify = $("btn-otp-verify");
+    const otpVerifyStatus = $("otpVerifyStatus");
 
-    const captchaCanvas = document.getElementById("captchaCanvas");
-    const btnCaptchaRefresh = document.getElementById("btn-captcha-refresh");
-    const captchaInput = document.getElementById("captchaInput");
-    const btnCaptchaVerify = document.getElementById("btn-captcha-verify");
-    const pillCaptcha = document.getElementById("pill-captcha");
+    const btnSubmit = $("btn-submit");
+    const statusEl = $("status");
 
-    const btnOtpSend = document.getElementById("btn-otp-send");
-    const pillOtpSend = document.getElementById("pill-otp-send");
-    const otpInput = document.getElementById("otpInput");
-    const btnOtpVerify = document.getElementById("btn-otp-verify");
-    const pillOtp = document.getElementById("pill-otp");
-    const otpHint = document.getElementById("otpHint");
+    // Debug terminal：只抓這一個
+    const debugEl = $("debug");
 
-    const btnSubmit = document.getElementById("btn-submit");
-
-    // ---- state ----
-    let liffReady = false;
-    let liffProfile = null; // { userId, displayName, ... }
-
+    // ====== State ======
     let oaid = "";
     let dbName = "";
+    let liffReady = false;
+    let liffProfile = null;
+
+    let captchaCode = "";
+    let captchaVerified = false;
+
+    let otpVerified = false;
 
     let isBound = false;
     let memberNo = null;
     let bindId = null;
 
-    let captchaCode = "";
-    let captchaVerified = false;
-
-    let otpVerified = false; // 先求有：目前由你決定何時改成真的 verify
-    let bindToken = "DUMMY_TOKEN"; // 先求有（你後端真正做一次性 token 再換掉）
-
-    // ---- utils ----
-    function setPill(el, type, text) {
-      el.classList.remove("ok", "bad", "neu");
-      el.classList.add(type);
-      el.textContent = text;
+    // ====== Utils ======
+    function dbg(line) {
+      const t = new Date().toISOString().slice(11, 19); // HH:MM:SS
+      debugEl.textContent += `\n[${t}] ${line}`;
+      debugEl.scrollTop = debugEl.scrollHeight;
     }
 
-    function escapeHtml(s) {
-      return (s ?? "").toString()
+    function setStatus(text, type) {
+      statusEl.className = "status" + (type ? " " + type : "");
+      statusEl.textContent = text || "";
+    }
+
+    function escapeHtml(str) {
+      return String(str ?? "")
         .replaceAll("&", "&amp;")
         .replaceAll("<", "&lt;")
         .replaceAll(">", "&gt;")
@@ -172,70 +169,63 @@
         .replaceAll("'", "&#039;");
     }
 
-    function normalizePhone(phone) {
-      return (phone || "").replace(/\D/g, "");
+    function normalizePhone(raw) {
+      const s = String(raw || "").trim().replaceAll(" ", "").replaceAll("-", "");
+      return s;
     }
 
     function getOaIdFromUrl() {
-      const qs = new URLSearchParams(location.search);
-      return (qs.get("oaid") || "").trim();
+      const u = new URL(location.href);
+      // 你目前用 ?oaid=...
+      return (u.searchParams.get("oaid") || "").trim();
     }
 
-    function lockAllUI(reasonText) {
-      // disable everything
-      [nameInput, phoneInput, addressInput, captchaInput, otpInput].forEach(x => x.disabled = true);
-      [btnCaptchaRefresh, btnCaptchaVerify, btnOtpSend, btnOtpVerify, btnSubmit].forEach(x => x.disabled = true);
-
-      if (reasonText) {
-        statusEl.textContent = reasonText;
-        statusEl.className = "status success";
-      }
+    function lockAllUI() {
+      [nameInput, phoneInput, addressInput, captchaInput, otpInput].forEach(el => el.disabled = true);
+      [btnCaptchaRefresh, btnCaptchaVerify, btnOtpSend, btnOtpVerify, btnSubmit].forEach(el => el.disabled = true);
     }
 
     function canSubmit() {
-      if (isBound) return false;
-      const nameOk = !!nameInput.value.trim();
-      const phoneOk = normalizePhone(phoneInput.value.trim()).length >= 8;
-      const liffOk = liffReady && window.liff && liff.isInClient() && liffProfile?.userId;
-      return liffOk && nameOk && phoneOk && captchaVerified && otpVerified && !!bindToken && !!oaid && !!dbName;
+      const nameOk = nameInput.value.trim().length > 0;
+      const phoneOk = normalizePhone(phoneInput.value).length >= 10; // 先求有
+      const liffOk = liffReady && window.liff && liff.isLoggedIn() && liffProfile?.userId;
+      const oaOk = !!oaid && !!dbName && !dbName.includes("查無") && !dbName.includes("失敗") && !dbName.includes("未提供");
+      return !!liffOk && nameOk && phoneOk && captchaVerified && otpVerified && !!bindToken && oaOk && !isBound;
     }
 
     function refreshSubmitState() {
       btnSubmit.disabled = !canSubmit();
     }
 
-    function renderUser() {
-      const rows = [];
-      rows.push(`<div>oaid：<code>${escapeHtml(oaid || "（未提供）")}</code></div>`);
-      rows.push(`<div>db_name：<code>${escapeHtml(dbName || "（查詢中/尚未取得）")}</code></div>`);
-
-      if (!liffProfile) {
-        rows.push(`<div>displayName：<b>（尚未取得）</b></div>`);
-        rows.push(`<div>uid：<code>（尚未取得）</code></div>`);
-        userBodyEl.innerHTML = rows.join("");
+    // ====== OA lookup ======
+    async function lookupDbNameByOaId(oaidValue) {
+      if (!oaidValue) {
+        dbName = "（未提供 oaid）";
+        dbg(`oaid missing -> db_name=${dbName}`);
         return;
       }
+      try {
+        const url = `${API_OA_LOOKUP}?oaid=${encodeURIComponent(oaidValue)}`;
+        const res = await fetch(url, { method: "GET", mode: "cors", cache: "no-store" });
+        const data = await res.json().catch(() => ({}));
 
-      rows.push(`<div>displayName：<b>${escapeHtml(liffProfile.displayName || "")}</b></div>`);
-      rows.push(`<div>uid：<code>${escapeHtml(liffProfile.userId || "")}</code></div>`);
-      userBodyEl.innerHTML = rows.join("");
+        if (!res.ok || !data?.ok) {
+          dbName = "（查詢失敗）";
+          dbg(`oa_lookup failed: HTTP ${res.status} / ${data?.error || "unknown"}`);
+          return;
+        }
+
+        dbName = data?.db_name || "（查無對應）";
+        dbg(`oa_lookup ok -> oaid=${oaidValue}, db_name=${dbName}`);
+      } catch (e) {
+        dbName = "（查詢失敗）";
+        dbg(`oa_lookup exception: ${e?.message || e}`);
+      }
     }
 
-    // ---- API calls ----
-    async function lookupDbNameByOaId(oaidValue) {
-      if (!oaidValue) return "";
-      const url = `${API_OA_LOOKUP}?oaid=${encodeURIComponent(oaidValue)}`;
-      const res = await fetch(url, { method: "GET", mode: "cors", cache: "no-store" });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok || !data?.ok) return "";
-
-      const first = Array.isArray(data.items) ? data.items[0] : null;
-      return (first?.db_name) ? first.db_name : (data.db_name || data.dbName || "");
-    }
-
+    // ====== is_bind_member ======
     async function checkIsBindMember(oaidValue, uidValue) {
       if (!oaidValue || !uidValue) return { ok:false, error:"missing params" };
-
       const url = `${API_IS_BIND}?oaid=${encodeURIComponent(oaidValue)}&uid=${encodeURIComponent(uidValue)}`;
       const res = await fetch(url, { method: "GET", mode: "cors", cache: "no-store" });
       const data = await res.json().catch(() => ({}));
@@ -243,7 +233,7 @@
       return data;
     }
 
-    // ---- CAPTCHA ----
+    // ====== CAPTCHA ======
     function randomDigits(n) {
       let out = "";
       for (let i = 0; i < n; i++) out += Math.floor(Math.random() * 10);
@@ -252,37 +242,30 @@
 
     function drawCaptcha(code) {
       const ctx = captchaCanvas.getContext("2d");
-      const w = captchaCanvas.width;
-      const h = captchaCanvas.height;
-
+      const w = captchaCanvas.width, h = captchaCanvas.height;
       ctx.clearRect(0, 0, w, h);
-      ctx.fillStyle = "rgba(255,255,255,0.06)";
+
+      // bg
+      ctx.fillStyle = "rgba(255,255,255,0.04)";
       ctx.fillRect(0, 0, w, h);
 
-      for (let i = 0; i < 10; i++) {
-        ctx.strokeStyle = `rgba(255,255,255,${0.08 + Math.random() * 0.12})`;
+      // noise lines
+      for (let i = 0; i < 7; i++) {
+        ctx.strokeStyle = `rgba(255,255,255,${0.05 + Math.random() * 0.12})`;
         ctx.beginPath();
         ctx.moveTo(Math.random() * w, Math.random() * h);
         ctx.lineTo(Math.random() * w, Math.random() * h);
         ctx.stroke();
       }
 
-      ctx.font = "bold 34px system-ui, -apple-system, Segoe UI, Roboto";
+      // text
+      ctx.font = "bold 34px system-ui, -apple-system, Segoe UI";
+      ctx.fillStyle = "rgba(255,255,255,0.92)";
       ctx.textBaseline = "middle";
-      for (let i = 0; i < code.length; i++) {
-        const ch = code[i];
-        const x = 18 + i * 32;
-        const y = h / 2 + (Math.random() * 6 - 3);
-        const rot = (Math.random() * 0.35 - 0.175);
-        ctx.save();
-        ctx.translate(x, y);
-        ctx.rotate(rot);
-        ctx.fillStyle = "rgba(255,255,255,0.92)";
-        ctx.fillText(ch, 0, 0);
-        ctx.restore();
-      }
+      ctx.fillText(code, 18, h / 2 + 2);
 
-      for (let i = 0; i < 60; i++) {
+      // dots
+      for (let i = 0; i < 80; i++) {
         ctx.fillStyle = `rgba(255,255,255,${0.05 + Math.random() * 0.12})`;
         ctx.fillRect(Math.random() * w, Math.random() * h, 1.5, 1.5);
       }
@@ -293,220 +276,177 @@
       captchaVerified = false;
       captchaInput.value = "";
       drawCaptcha(captchaCode);
-      setPill(pillCaptcha, "bad", "尚未驗證");
+      dbg("CAPTCHA reset");
       refreshSubmitState();
     }
 
+    // ====== OTP (先求有) ======
+    function resetOtp() {
+      otpVerified = false;
+      otpInput.value = "";
+      otpSendStatus.textContent = "尚未發送";
+      otpVerifyStatus.textContent = "尚未驗證";
+      refreshSubmitState();
+    }
+
+    // ====== Main init ======
+    async function initAll() {
+      dbg("init start");
+
+      // 1) oaid
+      oaid = getOaIdFromUrl();
+      dbg(`oaid=${oaid || "(empty)"}`);
+
+      // 2) lookup db
+      await lookupDbNameByOaId(oaid);
+
+      // 3) init LIFF
+      try {
+        await liff.init({ liffId: LIFF_ID });
+        liffReady = true;
+        dbg("LIFF：已初始化");
+      } catch (e) {
+        dbg(`LIFF init failed: ${e?.message || e}`);
+        setStatus("LIFF 初始化失敗，請確認 LIFF ID/網路狀態", "error");
+        refreshSubmitState();
+        return;
+      }
+
+      // 4) login check
+      if (!liff.isLoggedIn()) {
+        dbg("Line：未登入 -> redirect login");
+        setStatus("尚未登入 Line，準備跳轉登入…");
+        liff.login();
+        return;
+      }
+      dbg("Line：已登入");
+
+      // 5) get profile
+      try {
+        liffProfile = await liff.getProfile();
+        dbg(`profile ok: displayName=${liffProfile.displayName}, uid=${liffProfile.userId}`);
+      } catch (e) {
+        dbg(`getProfile failed: ${e?.message || e}`);
+        setStatus("取得使用者資訊失敗", "error");
+        refreshSubmitState();
+        return;
+      }
+
+      // 6) check bind
+      try {
+        const data = await checkIsBindMember(oaid, liffProfile.userId);
+        if (!data.ok) throw new Error(data.error || "is_bind_member not ok");
+
+        isBound = !!data.is_bound;
+        memberNo = data.member_no ?? null;
+        bindId = data.bind_id ?? null;
+
+        if (isBound) {
+          dbg(`Bind：已綁定 (member_no=${memberNo ?? "null"}, bind_id=${bindId ?? "null"})`);
+          setStatus("此帳號已綁定會員，表單已鎖定。", "success");
+          lockAllUI();
+        } else {
+          dbg("Bind：未綁定");
+          setStatus("");
+        }
+      } catch (e) {
+        dbg(`is_bind_member failed: ${e?.message || e}`);
+        setStatus("查詢綁定狀態失敗（請稍後重試）", "error");
+      }
+
+      // 7) init captcha/otp
+      resetCaptcha();
+      resetOtp();
+
+      // 8) wire input events
+      [nameInput, phoneInput].forEach(el => el.addEventListener("input", refreshSubmitState));
+      captchaInput.addEventListener("input", refreshSubmitState);
+      otpInput.addEventListener("input", refreshSubmitState);
+
+      refreshSubmitState();
+      dbg("init done");
+    }
+
+    // ====== Events ======
     btnCaptchaRefresh.addEventListener("click", () => {
-      if (isBound) return;
       resetCaptcha();
     });
 
     btnCaptchaVerify.addEventListener("click", () => {
-      if (isBound) return;
       const v = (captchaInput.value || "").trim();
       if (v === captchaCode) {
         captchaVerified = true;
-        setPill(pillCaptcha, "ok", "驗證通過 ✅");
+        dbg("CAPTCHA：驗證成功");
+        setStatus("CAPTCHA 驗證成功", "success");
       } else {
         captchaVerified = false;
-        setPill(pillCaptcha, "bad", "錯誤，請重試");
-        resetCaptcha();
+        dbg(`CAPTCHA：驗證失敗 (input=${v || "empty"})`);
+        setStatus("CAPTCHA 驗證失敗，請再試一次", "error");
       }
       refreshSubmitState();
     });
 
-    // ---- OTP (先求有：只 send) ----
-    function resetOtp() {
-      otpVerified = false;
-      otpInput.value = "";
-      otpHint.style.display = "none";
-      otpHint.textContent = "";
-
-      setPill(pillOtpSend, "bad", "尚未發送");
-      setPill(pillOtp, "bad", "尚未驗證");
-
-      otpInput.disabled = true;
-      btnOtpVerify.disabled = true;
-
-      refreshSubmitState();
-    }
-
     btnOtpSend.addEventListener("click", async () => {
-      if (isBound) return;
-
-      setPill(pillOtpSend, "neu", "發送中…");
-      btnOtpSend.disabled = true;
-
+      // 先求有：目前 /otp 沒帶 phone；你之後會改成 /otp/send 並帶 phone/oaid/uid
+      otpSendStatus.textContent = "發送中…";
+      dbg("OTP：send request...");
       try {
         const res = await fetch(API_OTP, { method: "GET", mode: "cors", cache: "no-store" });
-        const data = await res.json().catch(() => ({}));
-        if (!res.ok || data.ok === false) throw new Error(data.error || `HTTP ${res.status}`);
-
-        setPill(pillOtpSend, "ok", "已請求發送 ✅");
-        otpHint.style.display = "block";
-        otpHint.textContent = "已向後端請求發送 OTP 簡訊，請查看手機收件。";
-
-        // 先求有：解鎖輸入框/驗證按鈕，但你目前沒做 verify
-        otpInput.disabled = false;
-        btnOtpVerify.disabled = false;
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        otpSendStatus.textContent = "已發送（先求有）";
+        dbg("OTP：send ok");
       } catch (e) {
-        console.error("call /otp failed:", e);
-        setPill(pillOtpSend, "bad", "發送失敗");
-        otpHint.style.display = "block";
-        otpHint.textContent = "呼叫 OTP 服務失敗，請稍後再試。";
-      } finally {
-        btnOtpSend.disabled = false;
-        refreshSubmitState();
+        otpSendStatus.textContent = "發送失敗";
+        dbg(`OTP：send failed: ${e?.message || e}`);
       }
     });
 
     btnOtpVerify.addEventListener("click", () => {
-      if (isBound) return;
-
-      // 先求有：暫時只要有填 6 位就當作過（你之後接後端 verify 再換）
+      // 先求有：只做長度判斷（你之後接後端 verify）
       const v = (otpInput.value || "").trim();
       if (/^\d{6}$/.test(v)) {
         otpVerified = true;
-        setPill(pillOtp, "ok", "驗證通過 ✅");
+        otpVerifyStatus.textContent = "已驗證（先求有）";
+        dbg("OTP：verify ok (frontend stub)");
       } else {
         otpVerified = false;
-        setPill(pillOtp, "bad", "格式錯誤");
+        otpVerifyStatus.textContent = "驗證失敗";
+        dbg("OTP：verify failed (need 6 digits)");
       }
       refreshSubmitState();
     });
 
-    // ---- LIFF init + db lookup + is_bind_member ----
-    async function initAll() {
-      // 0) URL oaid
-      oaid = getOaIdFromUrl();
-      dbName = "";
-      renderUser();
-
-      // 1) db lookup（不依賴 LIFF）
-      setPill(pillBind, "neu", "Bind：等待 uid…");
-      if (oaid) {
-        try {
-          dbName = "查詢中…";
-          renderUser();
-          const found = await lookupDbNameByOaId(oaid);
-          dbName = found || "（查無對應）";
-        } catch (e) {
-          console.error("oa_lookup failed:", e);
-          dbName = "（查詢失敗）";
-        } finally {
-          renderUser();
-        }
-      } else {
-        dbName = "（未提供 oaid）";
-        renderUser();
-      }
-
-      // 2) LIFF
-      if (!window.liff) {
-        setPill(pillLiff, "bad", "LIFF：找不到 SDK");
-        setPill(pillClient, "bad", "Client：未知");
-        setPill(pillLogin, "bad", "Login：未知");
-        setPill(pillBind, "bad", "Bind：無法查詢");
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      if (!canSubmit()) {
+        dbg("submit blocked: canSubmit=false");
+        setStatus("條件尚未完成，無法送出。", "error");
         return;
       }
 
-      try {
-        await liff.init({ liffId: LIFF_ID });
-        liffReady = true;
-        setPill(pillLiff, "ok", "LIFF：已初始化 ✅");
+      const payload = {
+        oaid,
+        db_name: dbName,
+        uid: liffProfile?.userId || "",
+        displayName: liffProfile?.displayName || "",
+        name: nameInput.value.trim(),
+        phone: normalizePhone(phoneInput.value),
+        address: addressInput.value.trim(),
+        bind_token: bindToken,
 
-        const inClient = liff.isInClient();
-        setPill(pillClient, inClient ? "ok" : "bad", `Client：${inClient ? "是" : "否"}`);
+        // 你之後若要後端驗證身分，建議帶：
+        id_token: (window.liff?.getIDToken?.() || ""),
+        access_token: (window.liff?.getAccessToken?.() || "")
+      };
 
-        if (!liff.isLoggedIn()) {
-          setPill(pillLogin, "bad", "Login：未登入");
-          liff.login();
-          return;
-        }
-        setPill(pillLogin, "ok", "Login：已登入 ✅");
+      dbg("submit payload:");
+      dbg(JSON.stringify(payload));
 
-        liffProfile = await liff.getProfile();
-        renderUser();
-
-        // 自動帶入姓名
-        if (!nameInput.value.trim() && liffProfile?.displayName) {
-          nameInput.value = liffProfile.displayName;
-        }
-
-        // 3) is_bind_member
-        setPill(pillBind, "neu", "Bind：查詢中…");
-        bindExtraEl.style.display = "none";
-        bindExtraEl.textContent = "";
-
-        const bindRes = await checkIsBindMember(oaid, liffProfile.userId);
-        if (!bindRes.ok) {
-          setPill(pillBind, "bad", "Bind：查詢失敗");
-          bindExtraEl.style.display = "block";
-          bindExtraEl.textContent = "無法查詢綁定狀態，請稍後再試。";
-          refreshSubmitState();
-          return;
-        }
-
-        isBound = !!bindRes.is_bound;
-        memberNo = bindRes.member_no ?? null;
-        bindId = bindRes.bind_id ?? null;
-
-        if (isBound) {
-          setPill(pillBind, "ok", "Bind：已綁定 ✅");
-          bindExtraEl.style.display = "block";
-          bindExtraEl.innerHTML = [
-            `<div>狀態：<b>已綁定會員</b></div>`,
-            `<div>member_no：<code>${escapeHtml(memberNo ?? "（空）")}</code></div>`,
-            `<div>bind_id：<code>${escapeHtml(bindId ?? "（空）")}</code></div>`
-          ].join("");
-          lockAllUI("您已完成會員綁定，無需再次操作。");
-          return;
-        } else {
-          setPill(pillBind, "bad", "Bind：未綁定");
-          // 未綁定 → 正常使用
-          resetCaptcha();
-          resetOtp();
-          statusEl.textContent = "";
-          statusEl.className = "status";
-        }
-      } catch (e) {
-        console.error("init failed:", e);
-        setPill(pillLiff, "bad", "LIFF：初始化失敗");
-        setPill(pillClient, "bad", "Client：未知");
-        setPill(pillLogin, "bad", "Login：未知");
-        setPill(pillBind, "bad", "Bind：未知");
-        statusEl.textContent = "LIFF 初始化失敗，請檢查 LIFF 設定。";
-        statusEl.className = "status error";
-      } finally {
-        refreshSubmitState();
-      }
-    }
-
-    // ---- submit ----
-    form.addEventListener("submit", async (event) => {
-      event.preventDefault();
-      if (isBound) return;
-
-      // 你目前說：先不送 Line，不做真正後端 bind
-      statusEl.textContent = "目前版本：前端已完成綁定狀態判斷；送出流程待接後端綁定 API。";
-      statusEl.className = "status success";
+      // TODO：接你真正的 bind API
+      setStatus("送出流程待接後端綁定 API（目前只輸出 debug log）", "");
     });
 
-    // input events
-    [nameInput, phoneInput, addressInput, captchaInput, otpInput].forEach(el => {
-      el.addEventListener("input", refreshSubmitState);
-    });
-
-    // init
-    setPill(pillLiff, "neu", "LIFF：初始化中…");
-    setPill(pillClient, "neu", "Client：判斷中…");
-    setPill(pillLogin, "neu", "Login：判斷中…");
-    setPill(pillBind, "neu", "Bind：查詢中…");
-
-    // 先畫 captcha（若後面判斷已綁定會鎖掉）
-    resetCaptcha();
-    resetOtp();
+    // Boot
     initAll();
   </script>
 </body>
