@@ -374,6 +374,9 @@
       refreshSubmitState();
     });
 
+    // 全域：記錄後端回傳的 otp（測試捷徑用）
+    let lastOtp = null;
+
     btnOtpSend.addEventListener("click", async () => {
       setInline(otpSendStatus, "發送中…", "");
       dbg("OTP：send request...");
@@ -392,6 +395,7 @@
         // 可選：你想看回傳內容就讀 json
         const data = await res.json();
         console.log("otp send resp:", data);
+        lastOtp = data?.otp ?? null;
         
         setInline(otpSendStatus, "已發送（先求有）", "ok");
         dbg("OTP：send ok");
@@ -404,6 +408,7 @@
     btnOtpVerify.addEventListener("click", () => {
       // 先求有：只做格式判斷（你之後接後端 verify）
       const v = (otpInput.value || "").trim();
+      console.log(lastOtp)
       if (/^\d{6}$/.test(v)) {
         otpVerified = true;
         setInline(otpVerifyStatus, "驗證成功（先求有）", "ok");
