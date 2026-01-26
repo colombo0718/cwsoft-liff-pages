@@ -379,8 +379,17 @@
       dbg("OTP：send request...");
       console.log(oaid,normalizePhone(phoneInput.value))
       try {
-        const res = await fetch(API_OTP, { method: "GET", mode: "cors", cache: "no-store" });
+        const url = new URL(`${API_OTP}/send`);
+        url.searchParams.set("lineOAID", lineOAID);
+        url.searchParams.set("phone", phone);
+
+        const res = await fetch(url.toString(), { method: "GET", mode: "cors", cache: "no-store" });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+        // 可選：你想看回傳內容就讀 json
+        const data = await res.json();
+        console.log("otp send resp:", data);
+        
         setInline(otpSendStatus, "已發送（先求有）", "ok");
         dbg("OTP：send ok");
       } catch (e) {
