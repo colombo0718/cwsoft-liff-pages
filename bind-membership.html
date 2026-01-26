@@ -377,6 +377,7 @@
     btnOtpSend.addEventListener("click", async () => {
       setInline(otpSendStatus, "發送中…", "");
       dbg("OTP：send request...");
+      console.log(oaid,normalizePhone(phoneInput.value))
       try {
         const res = await fetch(API_OTP, { method: "GET", mode: "cors", cache: "no-store" });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
