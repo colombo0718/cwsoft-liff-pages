@@ -409,14 +409,25 @@
       // 先求有：只做格式判斷（你之後接後端 verify）
       const v = (otpInput.value || "").trim();
       console.log(lastOtp)
-      if (/^\d{6}$/.test(v)) {
+
+      // 先求有：捷徑版 = 前端比對 lastOtp
+      if (/^\d{6}$/.test(v) && lastOtp && v === String(lastOtp)) {
         otpVerified = true;
         setInline(otpVerifyStatus, "驗證成功（先求有）", "ok");
-        dbg("OTP：verify ok (frontend stub)");
+        dbg("OTP：verify ok (frontend shortcut)");
       } else {
         otpVerified = false;
-        setInline(otpVerifyStatus, "驗證失敗", "bad");
-        dbg("OTP：verify failed (need 6 digits)");
+        // 這裡順便區分原因，方便你測
+        if (!/^\d{6}$/.test(v)) {
+          setInline(otpVerifyStatus, "驗證失敗：需 6 位數字", "bad");
+          dbg("OTP：verify failed (need 6 digits)");
+        } else if (!lastOtp) {
+          setInline(otpVerifyStatus, "驗證失敗：請先取得驗證碼", "bad");
+          dbg("OTP：verify failed (no lastOtp)");
+        } else {
+          setInline(otpVerifyStatus, "驗證失敗：驗證碼不正確", "bad");
+          dbg("OTP：verify failed (mismatch)");
+        }
       }
       refreshSubmitState();
     });
