@@ -470,42 +470,44 @@
       }
 
       // 只送四個重要參數（先求有）
-      const payload4 = {
-        lineOAID: oaid,
-        lineUid: liffProfile?.userId || "",
-        name: nameInput.value.trim(),
-        phone: normalizePhone(phoneInput.value),
-      };
+const payload4 = {
+  lineOAID: oaid,
+  lineUid: liffProfile?.userId || "",
+  name: nameInput.value.trim(),
+  phone: normalizePhone(phoneInput.value),
+};
 
-      dbg("submit payload4:");
-      dbg(JSON.stringify(payload4));
+try {
+  setStatus("送出中…", "");
 
-      try {
-        setStatus("送出中…", "");
+  // GET：改用 query string
+  const url = new URL(API_BIND); // 例：https://cwsoft.leaflune.org/bind
+  url.searchParams.set("lineOAID", payload4.lineOAID);
+  url.searchParams.set("lineUid", payload4.lineUid);
+  url.searchParams.set("name", payload4.name);
+  url.searchParams.set("phone", payload4.phone);
 
-        const res = await fetch(API_BIND, {
-          method: "GET",
-          mode: "cors",
-          cache: "no-store",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload4),
-        });
+  const res = await fetch(url.toString(), {
+    method: "GET",
+    mode: "cors",
+    cache: "no-store",
+  });
 
-        // 先把後端回傳讀出來，方便你 debug
-        const data = await res.json().catch(() => null);
+  // 後端回 json 的話就讀出來方便 debug
+  const data = await res.json().catch(() => null);
 
-        if (!res.ok) {
-          dbg("bind failed resp:");
-          dbg(JSON.stringify(data));
-          throw new Error(`HTTP ${res.status}`);
-        }
+  if (!res.ok) {
+    dbg("bind failed resp:");
+    dbg(JSON.stringify(data));
+    throw new Error(`HTTP ${res.status}`);
+  }
 
-        dbg("bind ok resp:");
-        dbg(JSON.stringify(data));
-        setStatus("綁定送出成功（先求有）", "ok");
-      } catch (err) {
-        setStatus(`綁定送出失敗：${err?.message || err}`, "error");
-      }
+  dbg("bind ok resp:");
+  dbg(JSON.stringify(data));
+  setStatus("綁定送出成功（先求有）", "ok");
+} catch (err) {
+  setStatus(`綁定送出失敗：${err?.message || err}`, "error");
+}
     });
 
     // Boot
