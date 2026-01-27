@@ -484,7 +484,7 @@
         setStatus("送出中…", "");
 
         const res = await fetch(API_BIND, {
-          method: "POST",
+          method: "GET",
           mode: "cors",
           cache: "no-store",
           headers: { "Content-Type": "application/json" },
