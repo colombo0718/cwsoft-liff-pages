@@ -481,7 +481,7 @@ try {
   setStatus("送出中…", "");
 
   // GET：改用 query string
-  const url = new URL(API_BIND); // 例：https://cwsoft.leaflune.org/bind
+  const url = new URL(`${API_BIND}/submit`); // 例：https://cwsoft.leaflune.org/bind/submit
   url.searchParams.set("lineOAID", payload4.lineOAID);
   url.searchParams.set("lineUid", payload4.lineUid);
   url.searchParams.set("name", payload4.name);
