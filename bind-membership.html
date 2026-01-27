@@ -119,8 +119,9 @@
     // ====== Config ======
     const LIFF_ID = "2008039127-p7We0QWm"; // 你的 LIFF ID
     const API_OA_LOOKUP = "https://cwsoft.leaflune.org/sqlgate/oa_lookup";
-    const API_IS_BIND  = "https://cwsoft.leaflune.org/sqlgate/is_bind_member";
-    const API_OTP      = "https://cwsoft.leaflune.org/otp";
+    const API_IS_BIND   = "https://cwsoft.leaflune.org/sqlgate/is_bind_member";
+    const API_OTP       = "https://cwsoft.leaflune.org/otp";
+    const API_BIND      = "https://cwsoft.leaflune.org/bind";
     // TODO: 之後接真正綁定 API
     // const API_BIND     = "https://cwsoft.leaflune.org/sqlgate/bind_member";
 
@@ -432,6 +433,34 @@
       refreshSubmitState();
     });
 
+    // form.addEventListener("submit", async (e) => {
+    //   e.preventDefault();
+    //   if (!canSubmit()) {
+    //     dbg("submit blocked: canSubmit=false");
+    //     setStatus("條件尚未完成，無法送出。", "error");
+    //     return;
+    //   }
+
+    //   const payload = {
+    //     oaid,
+    //     db_name: dbName,
+    //     uid: liffProfile?.userId || "",
+    //     displayName: liffProfile?.displayName || "",
+    //     name: nameInput.value.trim(),
+    //     phone: normalizePhone(phoneInput.value),
+    //     address: addressInput.value.trim(),
+    //     bind_token: bindToken,
+    //     id_token: (window.liff?.getIDToken?.() || ""),
+    //     access_token: (window.liff?.getAccessToken?.() || "")
+    //   };
+
+    //   dbg("submit payload:");
+    //   dbg(JSON.stringify(payload));
+
+    //   // TODO: 接後端綁定 API
+    //   setStatus("送出流程待接後端綁定 API（目前只輸出 debug log）", "");
+    // });
+
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
       if (!canSubmit()) {
@@ -440,24 +469,43 @@
         return;
       }
 
-      const payload = {
-        oaid,
-        db_name: dbName,
-        uid: liffProfile?.userId || "",
-        displayName: liffProfile?.displayName || "",
+      // 只送四個重要參數（先求有）
+      const payload4 = {
+        lineOAID: oaid,
+        lineUid: liffProfile?.userId || "",
         name: nameInput.value.trim(),
         phone: normalizePhone(phoneInput.value),
-        address: addressInput.value.trim(),
-        bind_token: bindToken,
-        id_token: (window.liff?.getIDToken?.() || ""),
-        access_token: (window.liff?.getAccessToken?.() || "")
       };
 
-      dbg("submit payload:");
-      dbg(JSON.stringify(payload));
+      dbg("submit payload4:");
+      dbg(JSON.stringify(payload4));
 
-      // TODO: 接後端綁定 API
-      setStatus("送出流程待接後端綁定 API（目前只輸出 debug log）", "");
+      try {
+        setStatus("送出中…", "");
+
+        const res = await fetch(API_BIND, {
+          method: "POST",
+          mode: "cors",
+          cache: "no-store",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload4),
+        });
+
+        // 先把後端回傳讀出來，方便你 debug
+        const data = await res.json().catch(() => null);
+
+        if (!res.ok) {
+          dbg("bind failed resp:");
+          dbg(JSON.stringify(data));
+          throw new Error(`HTTP ${res.status}`);
+        }
+
+        dbg("bind ok resp:");
+        dbg(JSON.stringify(data));
+        setStatus("綁定送出成功（先求有）", "ok");
+      } catch (err) {
+        setStatus(`綁定送出失敗：${err?.message || err}`, "error");
+      }
     });
 
     // Boot
