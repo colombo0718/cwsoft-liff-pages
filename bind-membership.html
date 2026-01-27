@@ -237,7 +237,7 @@
         return;
       }
       try {
-        const url = `${API_OA_LOOKUP}?oaid=${encodeURIComponent(oaidValue)}`;
+        const url = `${API_BIND}/oa_lookup?oaid=${encodeURIComponent(oaidValue)}`;
         const res = await fetch(url, { method: "GET", mode: "cors", cache: "no-store" });
         const data = await res.json().catch(() => ({}));
 
@@ -258,7 +258,7 @@
 
     // ====== is_bind_member ======
     async function checkIsBindMember(oaidValue, uidValue) {
-      const url = `${API_IS_BIND}?oaid=${encodeURIComponent(oaidValue)}&uid=${encodeURIComponent(uidValue)}`;
+      const url = `${API_IS_BIND}/is_bind_member?oaid=${encodeURIComponent(oaidValue)}&uid=${encodeURIComponent(uidValue)}`;
       const res = await fetch(url, { method: "GET", mode: "cors", cache: "no-store" });
       const data = await res.json().catch(() => ({}));
       if (!res.ok || !data?.ok) return { ok:false, error:(data?.error || `HTTP ${res.status}`) };
@@ -433,33 +433,6 @@
       refreshSubmitState();
     });
 
-    // form.addEventListener("submit", async (e) => {
-    //   e.preventDefault();
-    //   if (!canSubmit()) {
-    //     dbg("submit blocked: canSubmit=false");
-    //     setStatus("條件尚未完成，無法送出。", "error");
-    //     return;
-    //   }
-
-    //   const payload = {
-    //     oaid,
-    //     db_name: dbName,
-    //     uid: liffProfile?.userId || "",
-    //     displayName: liffProfile?.displayName || "",
-    //     name: nameInput.value.trim(),
-    //     phone: normalizePhone(phoneInput.value),
-    //     address: addressInput.value.trim(),
-    //     bind_token: bindToken,
-    //     id_token: (window.liff?.getIDToken?.() || ""),
-    //     access_token: (window.liff?.getAccessToken?.() || "")
-    //   };
-
-    //   dbg("submit payload:");
-    //   dbg(JSON.stringify(payload));
-
-    //   // TODO: 接後端綁定 API
-    //   setStatus("送出流程待接後端綁定 API（目前只輸出 debug log）", "");
-    // });
 
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
