@@ -118,12 +118,10 @@
   <script>
     // ====== Config ======
     const LIFF_ID = "2008039127-p7We0QWm"; // 你的 LIFF ID
-    const API_OA_LOOKUP = "https://cwsoft.leaflune.org/bind/oa_lookup";
-    const API_IS_BIND   = "https://cwsoft.leaflune.org/bind/is_bind_member";
+    // const API_OA_LOOKUP = "https://cwsoft.leaflune.org/bind/oa_lookup";
+    // const API_IS_BIND   = "https://cwsoft.leaflune.org/bind/is_bind_member";
     const API_OTP       = "https://cwsoft.leaflune.org/otp";
     const API_BIND      = "https://cwsoft.leaflune.org/bind";
-    // TODO: 之後接真正綁定 API
-    // const API_BIND     = "https://cwsoft.leaflune.org/sqlgate/bind_member";
 
     // 先求有：你之後會換成後端的一次性 token
     let bindToken = "DUMMY_TOKEN";
@@ -258,7 +256,7 @@
 
     // ====== is_bind_member ======
     async function checkIsBindMember(oaidValue, uidValue) {
-      const url = `${API_IS_BIND}/is_bind_member?oaid=${encodeURIComponent(oaidValue)}&uid=${encodeURIComponent(uidValue)}`;
+      const url = `${API_BIND}/is_bind_member?oaid=${encodeURIComponent(oaidValue)}&uid=${encodeURIComponent(uidValue)}`;
       const res = await fetch(url, { method: "GET", mode: "cors", cache: "no-store" });
       const data = await res.json().catch(() => ({}));
       if (!res.ok || !data?.ok) return { ok:false, error:(data?.error || `HTTP ${res.status}`) };
