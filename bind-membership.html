@@ -125,107 +125,6 @@
     // 先求有：你之後會換成後端的一次性 token
     let bindToken = "DUMMY_TOKEN";
 
-    // // ====== DOM ======
-    // const $ = (id) => document.getElementById(id);
-
-    // const form = $("member-form");
-    // const nameInput = $("name");
-    // const phoneInput = $("phone");
-    // const addressInput = $("address");
-
-    // const captchaCanvas = $("captchaCanvas");
-    // const btnCaptchaRefresh = $("btn-captcha-refresh");
-    // const captchaInput = $("captchaInput");
-    // const btnCaptchaVerify = $("btn-captcha-verify");
-    // const captchaVerifyStatus = $("captchaVerifyStatus");
-
-    // const btnOtpSend = $("btn-otp-send");
-    // const otpSendStatus = $("otpSendStatus");
-    // const otpInput = $("otpInput");
-    // const btnOtpVerify = $("btn-otp-verify");
-    // const otpVerifyStatus = $("otpVerifyStatus");
-
-    // const btnSubmit = $("btn-submit");
-    // const statusEl = $("status");
-    // const debugEl = $("debug");
-
-    // // ====== State ======
-    // let oaid = "";
-    // let dbName = "";
-    // let liffReady = false;
-    // let liffProfile = null;
-
-    // let captchaCode = "";
-    // let captchaVerified = false;
-
-    // let otpVerified = false;
-
-    // let isBound = false;
-    // let memberNo = null;
-    // let bindId = null;
-
-    // // ====== Utils ======
-    // function dbg(line) {
-    //   const t = new Date().toISOString().slice(11, 19); // HH:MM:SS
-    //   debugEl.textContent += `\n[${t}] ${line}`;
-    //   debugEl.scrollTop = debugEl.scrollHeight;
-    // }
-
-    // function setStatus(text, type) {
-    //   statusEl.className = "status" + (type ? " " + type : "");
-    //   statusEl.textContent = text || "";
-    // }
-
-    // function setInline(el, text, type) {
-    //   el.textContent = text;
-    //   // 不搞 fancy pill：只用顏色區分
-    //   if (type === "ok") el.style.color = "#bbf7d0";
-    //   else if (type === "bad") el.style.color = "#fecaca";
-    //   else el.style.color = "var(--muted)";
-    // }
-
-    // function normalizePhone(raw) {
-    //   return String(raw || "").trim().replaceAll(" ", "").replaceAll("-", "");
-    // }
-
-    // function getOaIdFromUrl() {
-    //   const u = new URL(location.href);
-    //   return (u.searchParams.get("oaid") || "").trim();
-    // }
-
-    // function lockAllUI() {
-    //   [nameInput, phoneInput, addressInput, captchaInput, otpInput].forEach(el => el.disabled = true);
-    //   [btnCaptchaRefresh, btnCaptchaVerify, btnOtpSend, btnOtpVerify, btnSubmit].forEach(el => el.disabled = true);
-    // }
-
-    // function dbLooksOk(db) {
-    //   if (!db) return false;
-    //   return !db.includes("查無") && !db.includes("失敗") && !db.includes("未提供");
-    // }
-
-    // function canSubmit() {
-    //   const nameOk = nameInput.value.trim().length > 0;
-    //   const phoneOk = normalizePhone(phoneInput.value).length >= 10; // 先求有
-    //   const liffOk = liffReady && window.liff && liff.isLoggedIn() && liffProfile?.userId;
-    //   const oaOk = !!oaid && dbLooksOk(dbName);
-    //   return !!liffOk && nameOk && phoneOk && captchaVerified && otpVerified && !!bindToken && oaOk && !isBound;
-    // }
-
-    // function refreshSubmitState() {
-    //   btnSubmit.disabled = !canSubmit();
-    // }
-
-    // function autofillNameFromLineProfile() {
-    //   if (!liffProfile?.displayName) return;
-
-    //   // 如果使用者已輸入，就不要硬覆蓋
-    //   const current = (nameInput.value || "").trim();
-    //   if (current.length > 0) return;
-
-    //   nameInput.value = liffProfile.displayName.trim();
-    //   dbg(`autofill name <- ${liffProfile.displayName}`);
-    // }
-
     // ====== OA lookup ======
     async function lookupDbNameByOaId(oaidValue) {
       if (!oaidValue) {
@@ -253,9 +152,9 @@
       }
     }
 
-    // ====== is_bind_member ======
+    // ====== is_bind ======
     async function checkIsBindMember(oaidValue, uidValue) {
-      const url = `${API_BIND}/is_bind_member?oaid=${encodeURIComponent(oaidValue)}&uid=${encodeURIComponent(uidValue)}`;
+      const url = `${API_BIND}/is_bind?oaid=${encodeURIComponent(oaidValue)}&uid=${encodeURIComponent(uidValue)}`;
       const res = await fetch(url, { method: "GET", mode: "cors", cache: "no-store" });
       const data = await res.json().catch(() => ({}));
       if (!res.ok || !data?.ok) return { ok:false, error:(data?.error || `HTTP ${res.status}`) };
@@ -321,7 +220,7 @@
       // 6) check bind
       try {
         const data = await checkIsBindMember(oaid, liffProfile.userId);
-        if (!data.ok) throw new Error(data.error || "is_bind_member not ok");
+        if (!data.ok) throw new Error(data.error || "is_bind not ok");
 
         isBound = !!data.is_bound;
         memberNo = data.member_no ?? null;
@@ -336,7 +235,7 @@
           setStatus("");
         }
       } catch (e) {
-        dbg(`is_bind_member failed: ${e?.message || e}`);
+        dbg(`is_bind failed: ${e?.message || e}`);
         setStatus("查詢綁定狀態失敗（請稍後重試）", "error");
       }
 
@@ -403,32 +302,84 @@
       }
     });
 
-    btnOtpVerify.addEventListener("click", () => {
-      // 先求有：只做格式判斷（你之後接後端 verify）
-      const v = (otpInput.value || "").trim();
-      console.log(lastOtp)
+btnOtpVerify.addEventListener("click", async () => {
+  const v = (otpInput.value || "").trim();
+  const phone = normalizePhone(phoneInput.value);
 
-      // 先求有：捷徑版 = 前端比對 lastOtp
-      if (/^\d{6}$/.test(v) && lastOtp && v === String(lastOtp)) {
-        otpVerified = true;
-        setInline(otpVerifyStatus, "驗證成功（先求有）", "ok");
-        dbg("OTP：verify ok (frontend shortcut)");
-      } else {
-        otpVerified = false;
-        // 這裡順便區分原因，方便你測
-        if (!/^\d{6}$/.test(v)) {
-          setInline(otpVerifyStatus, "驗證失敗：需 6 位數字", "bad");
-          dbg("OTP：verify failed (need 6 digits)");
-        } else if (!lastOtp) {
-          setInline(otpVerifyStatus, "驗證失敗：請先取得驗證碼", "bad");
-          dbg("OTP：verify failed (no lastOtp)");
-        } else {
-          setInline(otpVerifyStatus, "驗證失敗：驗證碼不正確", "bad");
-          dbg("OTP：verify failed (mismatch)");
-        }
-      }
-      refreshSubmitState();
+  // 先做基本格式檢查
+  if (!/^\d{6}$/.test(v)) {
+    otpVerified = false;
+    setInline(otpVerifyStatus, "驗證失敗：需 6 位數字", "bad");
+    dbg("OTP：verify failed (need 6 digits)");
+    refreshSubmitState();
+    return;
+  }
+  if (!phone) {
+    otpVerified = false;
+    setInline(otpVerifyStatus, "驗證失敗：請先填手機號碼", "bad");
+    dbg("OTP：verify failed (no phone)");
+    refreshSubmitState();
+    return;
+  }
+
+  try {
+    setInline(otpVerifyStatus, "驗證中…", "");
+    dbg("OTP：check request...");
+
+    // GET + query string
+    const url = new URL(`${API_OTP}/check`);
+    url.searchParams.set("phone", phone);
+    url.searchParams.set("otp", v);
+
+    const res = await fetch(url.toString(), {
+      method: "GET",
+      mode: "cors",
+      cache: "no-store",
     });
+
+    const data = await res.json().catch(() => ({}));
+    dbg("OTP：check resp:");
+    dbg(JSON.stringify(data));
+
+    if (!res.ok || !data?.ok) {
+      otpVerified = false;
+
+      // 依後端 error 類型顯示訊息（先求有）
+      const err = data?.error || `HTTP ${res.status}`;
+      if (err.includes("expired")) {
+        setInline(otpVerifyStatus, "驗證失敗：驗證碼已過期，請重新取得", "bad");
+      } else if (err.includes("mismatch")) {
+        setInline(otpVerifyStatus, "驗證失敗：驗證碼不正確", "bad");
+      } else if (err.includes("no otp record")) {
+        setInline(otpVerifyStatus, "驗證失敗：請先取得驗證碼", "bad");
+      } else {
+        setInline(otpVerifyStatus, "驗證失敗", "bad");
+      }
+
+      dbg(`OTP：verify failed: ${err}`);
+    } else {
+      // ✅ 成功：拿到 check_token，當成 bindToken
+      bindToken = data.check_token || "";
+      otpVerified = !!bindToken;
+
+      if (otpVerified) {
+        setInline(otpVerifyStatus, "驗證成功", "ok");
+        dbg("OTP：verify ok (backend check_token received)");
+      } else {
+        // 理論上不該發生
+        setInline(otpVerifyStatus, "驗證失敗：未取得 token", "bad");
+        dbg("OTP：verify failed (no check_token)");
+      }
+    }
+  } catch (e) {
+    otpVerified = false;
+    setInline(otpVerifyStatus, "驗證失敗：網路或伺服器錯誤", "bad");
+    dbg(`OTP：check failed: ${e?.message || e}`);
+  }
+
+  refreshSubmitState();
+});
+
 
 
     form.addEventListener("submit", async (e) => {
