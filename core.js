@@ -98,3 +98,50 @@
       nameInput.value = liffProfile.displayName.trim();
       dbg(`autofill name <- ${liffProfile.displayName}`);
     }
+
+        // ====== OA lookup ======
+    async function lookupDbNameByOaId(oaidValue) {
+      if (!oaidValue) {
+        dbName = "（未提供 oaid）";
+        dbg(`oaid missing -> db_name=${dbName}`);
+        return;
+      }
+      try {
+        const url = `${API_BIND}/oa_lookup?oaid=${encodeURIComponent(oaidValue)}`;
+        const res = await fetch(url, { method: "GET", mode: "cors", cache: "no-store" });
+        const data = await res.json().catch(() => ({}));
+
+        if (!res.ok || !data?.ok) {
+          dbName = "（查詢失敗）";
+          dbg(`oa_lookup failed: HTTP ${res.status} / ${data?.error || "unknown"}`);
+          return;
+        }
+
+        // 你已改回傳格式：外層 db_name
+        dbName = data?.db_name || "（查無對應）";
+        dbg(`oa_lookup ok -> oaid=${oaidValue}, db_name=${dbName}`);
+      } catch (e) {
+        dbName = "（查詢失敗）";
+        dbg(`oa_lookup exception: ${e?.message || e}`);
+      }
+    }
+
+    // ====== is_bind ======
+    async function checkIsBindMember(oaidValue, uidValue) {
+      const url = `${API_BIND}/is_bind?oaid=${encodeURIComponent(oaidValue)}&uid=${encodeURIComponent(uidValue)}`;
+      const res = await fetch(url, { method: "GET", mode: "cors", cache: "no-store" });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data?.ok) return { ok:false, error:(data?.error || `HTTP ${res.status}`) };
+      return data;
+    }
+
+
+
+    // ====== OTP (先求有) ======
+    function resetOtp() {
+      otpVerified = false;
+      otpInput.value = "";
+      setInline(otpSendStatus, "尚未發送", "");
+      setInline(otpVerifyStatus, "尚未驗證", "");
+      refreshSubmitState();
+    }
