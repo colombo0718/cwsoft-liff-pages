@@ -123,7 +123,7 @@
     const API_BIND      = "https://cwsoft.leaflune.org/bind";
 
     // 先求有：你之後會換成後端的一次性 token
-    let bindToken = "DUMMY_TOKEN";
+    let checkToken = "DUMMY_TOKEN";
 
 
     // ====== Main init ======
@@ -308,9 +308,9 @@
 
           dbg(`OTP：verify failed: ${err}`);
         } else {
-          // ✅ 成功：拿到 check_token，當成 bindToken
-          bindToken = data.check_token || "";
-          otpVerified = !!bindToken;
+          // ✅ 成功：拿到 check_token，當成 checkToken
+          checkToken = data.check_token || "";
+          otpVerified = !!checkToken;
 
           if (otpVerified) {
             setInline(otpVerifyStatus, "驗證成功", "ok");
@@ -338,17 +338,17 @@
         return;
       }
 
-// 只送四個重要參數 + bind_token（先求有）
+// 只送四個重要參數 + check_token（先求有）
 const payload4 = {
   lineOAID: oaid,
   lineUid: liffProfile?.userId || "",
   name: nameInput.value.trim(),
   phone: normalizePhone(phoneInput.value),
-  bind_token: bindToken || "",
+  check_token: checkToken || "",
 };
 
-if (!payload4.bind_token) {
-  dbg("submit blocked: missing bind_token");
+if (!payload4.check_token) {
+  dbg("submit blocked: missing check_token");
   setStatus("請先完成 OTP 驗證", "error");
   return;
 }
@@ -359,7 +359,7 @@ url.searchParams.set("lineOAID", payload4.lineOAID);
 url.searchParams.set("lineUid", payload4.lineUid);
 url.searchParams.set("name", payload4.name);
 url.searchParams.set("phone", payload4.phone);
-url.searchParams.set("bind_token", payload4.bind_token);
+url.searchParams.set("check_token", payload4.check_token);
 
       try {
         setStatus("送出中…", "");
