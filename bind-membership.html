@@ -231,7 +231,7 @@
       console.log(oaid,normalizePhone(phoneInput.value))
       const lineOAID = (oaid || "").trim(); // 你原本就有 oaid
       const phone = normalizePhone(phoneInput.value);
-
+      console.log(dbname);
       try {
         const url = new URL(`${API_OTP}/send`);
         url.searchParams.set("lineOAID", lineOAID);
