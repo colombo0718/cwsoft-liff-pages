@@ -225,9 +225,6 @@
       refreshSubmitState();
     });
 
-    // 全域：記錄後端回傳的 otp（測試捷徑用）
-    let lastOtp = null;
-
     btnOtpSend.addEventListener("click", async () => {
       setInline(otpSendStatus, "發送中…", "");
       dbg("OTP：send request...");
@@ -246,7 +243,6 @@
         // 可選：你想看回傳內容就讀 json
         const data = await res.json();
         console.log("otp send resp:", data);
-        lastOtp = data?.otp ?? null;
         
         setInline(otpSendStatus, "已發送（先求有）", "ok");
         dbg("OTP：send ok");
@@ -256,85 +252,83 @@
       }
     });
 
-btnOtpVerify.addEventListener("click", async () => {
-  const v = (otpInput.value || "").trim();
-  const phone = normalizePhone(phoneInput.value);
+    btnOtpVerify.addEventListener("click", async () => {
+      const v = (otpInput.value || "").trim();
+      const phone = normalizePhone(phoneInput.value);
 
-  // 先做基本格式檢查
-  if (!/^\d{6}$/.test(v)) {
-    otpVerified = false;
-    setInline(otpVerifyStatus, "驗證失敗：需 6 位數字", "bad");
-    dbg("OTP：verify failed (need 6 digits)");
-    refreshSubmitState();
-    return;
-  }
-  if (!phone) {
-    otpVerified = false;
-    setInline(otpVerifyStatus, "驗證失敗：請先填手機號碼", "bad");
-    dbg("OTP：verify failed (no phone)");
-    refreshSubmitState();
-    return;
-  }
+      // 先做基本格式檢查
+      if (!/^\d{6}$/.test(v)) {
+        otpVerified = false;
+        setInline(otpVerifyStatus, "驗證失敗：需 6 位數字", "bad");
+        dbg("OTP：verify failed (need 6 digits)");
+        refreshSubmitState();
+        return;
+      }
+      if (!phone) {
+        otpVerified = false;
+        setInline(otpVerifyStatus, "驗證失敗：請先填手機號碼", "bad");
+        dbg("OTP：verify failed (no phone)");
+        refreshSubmitState();
+        return;
+      }
 
-  try {
-    setInline(otpVerifyStatus, "驗證中…", "");
-    dbg("OTP：check request...");
+      try {
+        setInline(otpVerifyStatus, "驗證中…", "");
+        dbg("OTP：check request...");
 
-    // GET + query string
-    const url = new URL(`${API_OTP}/check`);
-    url.searchParams.set("phone", phone);
-    url.searchParams.set("otp", v);
+        // GET + query string
+        const url = new URL(`${API_OTP}/check`);
+        url.searchParams.set("phone", phone);
+        url.searchParams.set("otp", v);
 
-    const res = await fetch(url.toString(), {
-      method: "GET",
-      mode: "cors",
-      cache: "no-store",
+        const res = await fetch(url.toString(), {
+          method: "GET",
+          mode: "cors",
+          cache: "no-store",
+        });
+
+        const data = await res.json().catch(() => ({}));
+        dbg("OTP：check resp:");
+        dbg(JSON.stringify(data));
+
+        if (!res.ok || !data?.ok) {
+          otpVerified = false;
+
+          // 依後端 error 類型顯示訊息（先求有）
+          const err = data?.error || `HTTP ${res.status}`;
+          if (err.includes("expired")) {
+            setInline(otpVerifyStatus, "驗證失敗：驗證碼已過期，請重新取得", "bad");
+          } else if (err.includes("mismatch")) {
+            setInline(otpVerifyStatus, "驗證失敗：驗證碼不正確", "bad");
+          } else if (err.includes("no otp record")) {
+            setInline(otpVerifyStatus, "驗證失敗：請先取得驗證碼", "bad");
+          } else {
+            setInline(otpVerifyStatus, "驗證失敗", "bad");
+          }
+
+          dbg(`OTP：verify failed: ${err}`);
+        } else {
+          // ✅ 成功：拿到 check_token，當成 bindToken
+          bindToken = data.check_token || "";
+          otpVerified = !!bindToken;
+
+          if (otpVerified) {
+            setInline(otpVerifyStatus, "驗證成功", "ok");
+            dbg("OTP：verify ok (backend check_token received)");
+          } else {
+            // 理論上不該發生
+            setInline(otpVerifyStatus, "驗證失敗：未取得 token", "bad");
+            dbg("OTP：verify failed (no check_token)");
+          }
+        }
+      } catch (e) {
+        otpVerified = false;
+        setInline(otpVerifyStatus, "驗證失敗：網路或伺服器錯誤", "bad");
+        dbg(`OTP：check failed: ${e?.message || e}`);
+      }
+
+      refreshSubmitState();
     });
-
-    const data = await res.json().catch(() => ({}));
-    dbg("OTP：check resp:");
-    dbg(JSON.stringify(data));
-
-    if (!res.ok || !data?.ok) {
-      otpVerified = false;
-
-      // 依後端 error 類型顯示訊息（先求有）
-      const err = data?.error || `HTTP ${res.status}`;
-      if (err.includes("expired")) {
-        setInline(otpVerifyStatus, "驗證失敗：驗證碼已過期，請重新取得", "bad");
-      } else if (err.includes("mismatch")) {
-        setInline(otpVerifyStatus, "驗證失敗：驗證碼不正確", "bad");
-      } else if (err.includes("no otp record")) {
-        setInline(otpVerifyStatus, "驗證失敗：請先取得驗證碼", "bad");
-      } else {
-        setInline(otpVerifyStatus, "驗證失敗", "bad");
-      }
-
-      dbg(`OTP：verify failed: ${err}`);
-    } else {
-      // ✅ 成功：拿到 check_token，當成 bindToken
-      bindToken = data.check_token || "";
-      otpVerified = !!bindToken;
-
-      if (otpVerified) {
-        setInline(otpVerifyStatus, "驗證成功", "ok");
-        dbg("OTP：verify ok (backend check_token received)");
-      } else {
-        // 理論上不該發生
-        setInline(otpVerifyStatus, "驗證失敗：未取得 token", "bad");
-        dbg("OTP：verify failed (no check_token)");
-      }
-    }
-  } catch (e) {
-    otpVerified = false;
-    setInline(otpVerifyStatus, "驗證失敗：網路或伺服器錯誤", "bad");
-    dbg(`OTP：check failed: ${e?.message || e}`);
-  }
-
-  refreshSubmitState();
-});
-
-
 
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
@@ -344,45 +338,60 @@ btnOtpVerify.addEventListener("click", async () => {
         return;
       }
 
-      // 只送四個重要參數（先求有）
+// 只送四個重要參數 + bind_token（先求有）
 const payload4 = {
   lineOAID: oaid,
   lineUid: liffProfile?.userId || "",
   name: nameInput.value.trim(),
   phone: normalizePhone(phoneInput.value),
+  bind_token: bindToken || "",
 };
 
-try {
-  setStatus("送出中…", "");
-
-  // GET：改用 query string
-  const url = new URL(`${API_BIND}/submit`); // 例：https://cwsoft.leaflune.org/bind/submit
-  url.searchParams.set("lineOAID", payload4.lineOAID);
-  url.searchParams.set("lineUid", payload4.lineUid);
-  url.searchParams.set("name", payload4.name);
-  url.searchParams.set("phone", payload4.phone);
-
-  const res = await fetch(url.toString(), {
-    method: "GET",
-    mode: "cors",
-    cache: "no-store",
-  });
-
-  // 後端回 json 的話就讀出來方便 debug
-  const data = await res.json().catch(() => null);
-
-  if (!res.ok) {
-    dbg("bind failed resp:");
-    dbg(JSON.stringify(data));
-    throw new Error(`HTTP ${res.status}`);
-  }
-
-  dbg("bind ok resp:");
-  dbg(JSON.stringify(data));
-  setStatus("綁定送出成功（先求有）", "ok");
-} catch (err) {
-  setStatus(`綁定送出失敗：${err?.message || err}`, "error");
+if (!payload4.bind_token) {
+  dbg("submit blocked: missing bind_token");
+  setStatus("請先完成 OTP 驗證", "error");
+  return;
 }
+
+// GET：改用 query string
+const url = new URL(`${API_BIND}/submit`);
+url.searchParams.set("lineOAID", payload4.lineOAID);
+url.searchParams.set("lineUid", payload4.lineUid);
+url.searchParams.set("name", payload4.name);
+url.searchParams.set("phone", payload4.phone);
+url.searchParams.set("bind_token", payload4.bind_token);
+
+      try {
+        setStatus("送出中…", "");
+
+        // GET：改用 query string
+        // const url = new URL(`${API_BIND}/submit`); // 例：https://cwsoft.leaflune.org/bind/submit
+        // url.searchParams.set("lineOAID", payload4.lineOAID);
+        // url.searchParams.set("lineUid", payload4.lineUid);
+        // url.searchParams.set("name", payload4.name);
+        // url.searchParams.set("phone", payload4.phone);
+
+        const res = await fetch(url.toString(), {
+          method: "GET",
+          mode: "cors",
+          cache: "no-store",
+        });
+
+        // 後端回 json 的話就讀出來方便 debug
+        const data = await res.json().catch(() => null);
+
+        if (!res.ok) {
+          dbg("bind failed resp:");
+          dbg(JSON.stringify(data));
+          throw new Error(`HTTP ${res.status}`);
+        }
+
+        dbg("bind ok resp:");
+        dbg(JSON.stringify(data));
+        setStatus("綁定送出成功（先求有）", "ok");
+      } catch (err) {
+        setStatus(`綁定送出失敗：${err?.message || err}`, "error");
+      }
     });
 
     // Boot
