@@ -81,7 +81,7 @@
       const phoneOk = normalizePhone(phoneInput.value).length >= 10; // 先求有
       const liffOk = liffReady && window.liff && liff.isLoggedIn() && liffProfile?.userId;
       const oaOk = !!oaid && dbLooksOk(dbName);
-      return !!liffOk && nameOk && phoneOk && captchaVerified && otpVerified && !!bindToken && oaOk && !isBound;
+      return !!liffOk && nameOk && phoneOk && captchaVerified && otpVerified && !!checkToken && oaOk && !isBound;
     }
 
     function refreshSubmitState() {
