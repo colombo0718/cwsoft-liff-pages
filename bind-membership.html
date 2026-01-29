@@ -225,32 +225,37 @@
       refreshSubmitState();
     });
 
-    btnOtpSend.addEventListener("click", async () => {
-      setInline(otpSendStatus, "發送中…", "");
-      dbg("OTP：send request...");
-      console.log(oaid,normalizePhone(phoneInput.value))
-      const lineOAID = (oaid || "").trim(); // 你原本就有 oaid
-      const phone = normalizePhone(phoneInput.value);
-      console.log(dbName);
-      try {
-        const url = new URL(`${API_OTP}/send`);
-        url.searchParams.set("lineOAID", lineOAID);
-        url.searchParams.set("phone", phone);
+btnOtpSend.addEventListener("click", async () => {
+  setInline(otpSendStatus, "發送中…", "");
+  dbg("OTP：send request...");
 
-        const res = await fetch(url.toString(), { method: "GET", mode: "cors", cache: "no-store" });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const lineOAID = (oaid || "").trim();
+  const phone = normalizePhone(phoneInput.value);
+  const db_name = (dbName || "").trim();   // ✅ 新增
 
-        // 可選：你想看回傳內容就讀 json
-        const data = await res.json();
-        console.log("otp send resp:", data);
-        
-        setInline(otpSendStatus, "已發送（先求有）", "ok");
-        dbg("OTP：send ok");
-      } catch (e) {
-        setInline(otpSendStatus, "發送失敗", "bad");
-        dbg(`OTP：send failed: ${e?.message || e}`);
-      }
+  try {
+    const url = new URL(`${API_OTP}/send`);
+    url.searchParams.set("lineOAID", lineOAID);
+    url.searchParams.set("phone", phone);
+    url.searchParams.set("db_name", db_name); // ✅ 新增
+
+    const res = await fetch(url.toString(), {
+      method: "GET",
+      mode: "cors",
+      cache: "no-store",
     });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+    const data = await res.json();
+    console.log("otp send resp:", data);
+
+    setInline(otpSendStatus, "已發送（先求有）", "ok");
+    dbg("OTP：send ok");
+  } catch (e) {
+    setInline(otpSendStatus, "發送失敗", "bad");
+    dbg(`OTP：send failed: ${e?.message || e}`);
+  }
+});
 
     btnOtpVerify.addEventListener("click", async () => {
       const v = (otpInput.value || "").trim();
