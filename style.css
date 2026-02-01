@@ -296,3 +296,33 @@ canvas{
 .label-main.req .required{
   color: var(--pos-blue);
 }
+
+/* ===== 區塊標題：基本資料 / 安全驗證 ===== */
+.block{
+  margin-top:14px;
+  padding-top:14px;
+  border-top:1px solid rgba(255,255,255,.08);
+}
+
+.block-title{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  font-size:16px;
+  font-weight:800;
+  color:var(--text);
+  margin-bottom:10px;
+  letter-spacing:.02em;
+}
+
+/* 讓 block 裡第一個 label 不會貼太近 */
+.block label:first-of-type{ margin-top:4px; }
+
+/* 送出區塊再稍微留白，視覺更像結尾 */
+.submit-area{ padding-bottom:6px; }
+
+/* Debug 預設不顯示（需要時再打開） */
+.debug-area{ display:none; }
+
+/* 若你想在開發時顯示 debug：body 加上 class="debug" */
+body.debug .debug-area{ display:block; }
