@@ -28,7 +28,7 @@
       <div class="block">
         <div class="block-title">👤 基本資料</div>
           <div class="hint">
-            請填寫會員資料並完成驗證。<br />
+            請填寫會員資料，並完成驗證。<br />
           </div>
         <label>
           <div class="label-main">姓名 </div>
@@ -62,51 +62,56 @@
         </label>
       </div>
 
-      <!-- CAPTCHA -->
-      <div class="section">
-        <div class="mini">🛡️ 防機器人驗證（圖片碼）</div>
-        <div class="mini">請輸入圖片中的 4 位數字（先求有：前端隨機產生）</div>
 
-        <div class="captchaBox" style="margin-top:10px;">
-          <canvas id="captchaCanvas" width="170" height="56"></canvas>
-          <button type="button" class="btn small" id="btn-captcha-refresh">換一張</button>
+      <div class="block"> 
+        <!-- CAPTCHA -->
+        <div class="block-title">🛡️ 安全驗證</div>
+        <div class="section">
+          <div class="block-title">🛡️ 安全驗證</div>
+          <div class="mini">🛡️ 防機器人驗證（圖片碼）</div>
+          <div class="mini">請輸入圖片中的 4 位數字（先求有：前端隨機產生）</div>
+
+          <div class="captchaBox" style="margin-top:10px;">
+            <canvas id="captchaCanvas" width="170" height="56"></canvas>
+            <button type="button" class="btn small" id="btn-captcha-refresh">換一張</button>
+          </div>
+
+          <!-- 這行用 inline flex，避免依賴 .row -->
+          <div style="margin-top:10px; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+            <input id="captchaInput"
+                  type="text"
+                  inputmode="numeric"
+                  placeholder="輸入四位數字"
+                  maxlength="4"
+                  style="flex:1; min-width:180px;" />
+            <button type="button" class="btn small" id="btn-captcha-verify">驗證圖片碼</button>
+            <span id="captchaVerifyStatus"
+                  style="font-size:12px; color:var(--muted); min-width:90px;">尚未驗證</span>
+          </div>
         </div>
 
-        <!-- 這行用 inline flex，避免依賴 .row -->
-        <div style="margin-top:10px; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
-          <input id="captchaInput"
-                 type="text"
-                 inputmode="numeric"
-                 placeholder="輸入四位數字"
-                 maxlength="4"
-                 style="flex:1; min-width:180px;" />
-          <button type="button" class="btn small" id="btn-captcha-verify">驗證圖片碼</button>
-          <span id="captchaVerifyStatus"
-                style="font-size:12px; color:var(--muted); min-width:90px;">尚未驗證</span>
-        </div>
-      </div>
+        <!-- OTP -->
+        <div class="section">
+          <div class="mini">📲 OTP 簡訊驗證</div>
+          <div class="mini">
+            點「取得 OTP」會呼叫後端 /otp 發送簡訊（目前先求有：verify 先用格式判斷）。
+          </div>
 
-      <!-- OTP -->
-      <div class="section">
-        <div class="mini">📲 OTP 簡訊驗證</div>
-        <div class="mini">
-          點「取得 OTP」會呼叫後端 /otp 發送簡訊（目前先求有：verify 先用格式判斷）。
-        </div>
+          <div style="margin-top:10px; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+            <button type="button" class="btn small" id="btn-otp-send">取得 OTP</button>
+            <span id="otpSendStatus" style="font-size:12px; color:var(--muted); min-width:120px;">尚未發送</span>
+          </div>
 
-        <div style="margin-top:10px; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
-          <button type="button" class="btn small" id="btn-otp-send">取得 OTP</button>
-          <span id="otpSendStatus" style="font-size:12px; color:var(--muted); min-width:120px;">尚未發送</span>
-        </div>
-
-        <div style="margin-top:10px; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
-          <input id="otpInput"
-                 type="text"
-                 inputmode="numeric"
-                 placeholder="輸入 6 位 OTP"
-                 maxlength="6"
-                 style="flex:1; min-width:180px;" />
-          <button type="button" class="btn small" id="btn-otp-verify">驗證 OTP</button>
-          <span id="otpVerifyStatus" style="font-size:12px; color:var(--muted); min-width:90px;">尚未驗證</span>
+          <div style="margin-top:10px; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+            <input id="otpInput"
+                  type="text"
+                  inputmode="numeric"
+                  placeholder="輸入 6 位 OTP"
+                  maxlength="6"
+                  style="flex:1; min-width:180px;" />
+            <button type="button" class="btn small" id="btn-otp-verify">驗證 OTP</button>
+            <span id="otpVerifyStatus" style="font-size:12px; color:var(--muted); min-width:90px;">尚未驗證</span>
+          </div>
         </div>
       </div>
 
