@@ -1,14 +1,35 @@
+/* style.css — Dark card UI + Green accent + Elder-friendly large typography */
+
 :root{
+  /* Theme */
   --card:#020617;
   --accent:#22c55e;
-  --accent-soft:rgba(34,197,94,.15);
+  --accent-soft:rgba(34,197,94,.16);
   --text:#e5e7eb;
   --muted:#9ca3af;
   --border:#1f2937;
   --danger:#ef4444;
+
+  /* Elder-friendly sizing */
+  --fz-title:20px;
+  --fz-subtitle:14px;
+  --fz-hint:14px;
+  --fz-label:15px;
+  --fz-input:18px;
+  --fz-mini:14px;
+  --fz-status:14px;
+  --fz-btn:18px;
+
+  --ctrl-h:46px;     /* input/select height */
+  --btn-h:52px;      /* primary button height */
+  --radius:14px;
 }
 
-*{ box-sizing:border-box; font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
+*{
+  box-sizing:border-box;
+  font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  line-height:1.45;
+}
 
 body{
   margin:0;
@@ -16,19 +37,20 @@ body{
   display:flex;
   align-items:center;
   justify-content:center;
-  padding:16px;
+  padding:18px;
   color:var(--text);
+  font-size:16px;
   background:radial-gradient(circle at top,#1f2937 0,#020617 55%,#000 100%);
 }
 
 /* Card */
 .card{
   width:100%;
-  max-width:420px;
+  max-width:480px;
   background:var(--card);
   border:1px solid var(--border);
   border-radius:18px;
-  padding:20px 18px 18px;
+  padding:22px 18px 18px;
   box-shadow:0 22px 45px rgba(0,0,0,.48);
 }
 
@@ -45,68 +67,136 @@ body{
   box-shadow:0 0 12px rgba(34,197,94,.8);
 }
 
-.title-group{ display:flex; flex-direction:column; gap:2px; }
+.title-group{
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+}
 
-h1{ margin:0; font-size:18px; font-weight:600; letter-spacing:.04em; }
+h1{
+  margin:0;
+  font-size:var(--fz-title);
+  font-weight:650;
+  letter-spacing:.02em;
+}
 
-.subtitle{ font-size:12px; color:var(--muted); }
+.subtitle{
+  font-size:var(--fz-subtitle);
+  color:var(--muted);
+}
 
+/* Hint text */
+.hint{
+  font-size:var(--fz-hint);
+  color:var(--muted);
+  margin-bottom:12px;
+  line-height:1.55;
+}
 
+.hintline{ margin-top:10px; }
 
-.hint{ font-size:12px; color:var(--muted); margin-bottom:10px; line-height:1.5; }
-.hintline{ margin-top:8px; }
-
-/* Form */
-form{ display:flex; flex-direction:column; gap:10px; margin-top:8px; }
+/* Form layout */
+form{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  margin-top:10px;
+}
 
 label{
   display:flex;
   flex-direction:column;
-  gap:4px;
-  font-size:13px;
+  gap:6px;
+  font-size:var(--fz-label);
 }
 
-.label-main{ display:flex; align-items:center; gap:4px; }
+.label-main{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  font-weight:600;
+}
+
 .required{ color:var(--danger); }
 
-input,textarea{
+/* Controls: input / textarea / select */
+input, textarea, select{
   width:100%;
-  padding:8px 10px;
-  border-radius:10px;
+  min-height:var(--ctrl-h);
+  padding:10px 12px;
+  border-radius:12px;
   border:1px solid var(--border);
   background:#020617;
   color:var(--text);
-  font-size:14px;
+  font-size:var(--fz-input);
   outline:none;
 }
 
-input::placeholder,textarea::placeholder{ color:#6b7280; font-size:13px; }
-
-input:focus,textarea:focus{
-  border-color:var(--accent);
-  box-shadow:0 0 0 1px rgba(34,197,94,.35);
+input::placeholder, textarea::placeholder{
+  color:#6b7280;
+  font-size:15px;
 }
 
-textarea{ min-height:64px; resize:vertical; }
+textarea{
+  min-height:72px;
+  resize:vertical;
+}
+
+/* Focus states */
+input:focus, textarea:focus, select:focus{
+  border-color:var(--accent);
+  box-shadow:0 0 0 2px rgba(34,197,94,.22);
+}
+
+input:focus-visible, textarea:focus-visible, select:focus-visible, button:focus-visible{
+  outline:2px solid rgba(34,197,94,.35);
+  outline-offset:2px;
+}
 
 /* Disabled */
-input[disabled],button[disabled]{ opacity:.5; cursor:not-allowed; }
+input[disabled], textarea[disabled], select[disabled], button[disabled]{
+  opacity:.55;
+  cursor:not-allowed;
+}
+
+/* Select styling: keep native behavior but consistent look */
+select{
+  appearance:none;
+  -webkit-appearance:none;
+  -moz-appearance:none;
+  padding-right:42px;
+  background-image:
+    linear-gradient(45deg, transparent 50%, rgba(229,231,235,.9) 50%),
+    linear-gradient(135deg, rgba(229,231,235,.9) 50%, transparent 50%);
+  background-position:
+    calc(100% - 18px) 50%,
+    calc(100% - 12px) 50%;
+  background-size:6px 6px, 6px 6px;
+  background-repeat:no-repeat;
+}
+
+/* Option colors (best-effort across browsers) */
+select option{
+  background:#0b1220;
+  color:var(--text);
+}
 
 /* Buttons */
 .btn{
   margin-top:6px;
-  padding:10px 12px;
+  min-height:var(--btn-h);
+  padding:12px 14px;
   border:none;
   border-radius:999px;
   cursor:pointer;
   background:linear-gradient(135deg,#22c55e,#4ade80);
   color:#022c22;
-  font-size:15px;
-  font-weight:600;
+  font-size:var(--fz-btn);
+  font-weight:700;
   display:flex;
   align-items:center;
   justify-content:center;
-  gap:6px;
+  gap:8px;
   box-shadow:0 16px 30px rgba(34,197,94,.45);
   transition:transform .12s ease, box-shadow .12s ease, filter .12s ease;
 }
@@ -118,14 +208,15 @@ input[disabled],button[disabled]{ opacity:.5; cursor:not-allowed; }
 }
 
 .btn.small{
-  padding:10px 12px;
-  border-radius:12px;
-  font-size:14px;
+  min-height:46px;
+  padding:10px 14px;
+  border-radius:14px;
+  font-size:16px;
 }
 
-.btn .icon{ font-size:16px; }
+.btn .icon{ font-size:18px; }
 
-/* Helpers */
+/* Sections / dividers */
 .section{
   margin-top:14px;
   padding-top:14px;
@@ -133,16 +224,16 @@ input[disabled],button[disabled]{ opacity:.5; cursor:not-allowed; }
 }
 
 .mini{
-  font-size:12px;
+  font-size:var(--fz-mini);
   color:var(--muted);
-  line-height:1.5;
+  line-height:1.55;
 }
 
 /* Status */
 .status{
   margin-top:8px;
-  min-height:16px;
-  font-size:12px;
+  min-height:18px;
+  font-size:var(--fz-status);
   color:var(--muted);
   white-space:pre-line;
 }
@@ -164,11 +255,7 @@ canvas{
   background:rgba(0,0,0,.15);
 }
 
-/* Responsive */
-@media (max-width:360px){
-  .card{ padding:18px 14px 16px; }
-}
-
+/* Row utilities */
 .row{
   display:flex;
   gap:10px;
@@ -177,10 +264,26 @@ canvas{
 }
 
 .inline-status{
-  font-size:12px;
+  font-size:var(--fz-status);
   color:var(--muted);
-  min-width: 90px;   /* 讓它穩定在按鈕右側 */
+  min-width:96px;
 }
 
 .inline-status.ok{ color:#bbf7d0; }
 .inline-status.bad{ color:#fecaca; }
+
+/* Responsive */
+@media (max-width:360px){
+  :root{
+    --fz-title:19px;
+    --fz-input:17px;
+    --fz-btn:17px;
+    --ctrl-h:44px;
+    --btn-h:50px;
+  }
+
+  .card{
+    padding:20px 14px 16px;
+    max-width:440px;
+  }
+}
