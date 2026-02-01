@@ -9,6 +9,7 @@
   --muted:#9ca3af;
   --border:#1f2937;
   --danger:#ef4444;
+  --pos-blue:#2563eb; /* 你可換成公司 POS 用的藍色 */
 
   /* Elder-friendly sizing */
   --fz-title:20px;
@@ -286,4 +287,12 @@ canvas{
     padding:20px 14px 16px;
     max-width:440px;
   }
+}
+
+.label-main.req{
+  color: var(--pos-blue);
+}
+
+.label-main.req .required{
+  color: var(--pos-blue);
 }
