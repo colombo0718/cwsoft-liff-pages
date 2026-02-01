@@ -300,7 +300,7 @@ canvas{
 .block{
   margin-top:14px;
   padding-top:14px;
-  border-top:1px solid rgba(255,255,255,.08);
+  /* border-top:1px solid rgba(255,255,255,.08); */
 }
 
 .block-title{
