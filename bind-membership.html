@@ -40,9 +40,25 @@
         <input id="phone" type="tel" placeholder="例如：0912-345-678" />
       </label>
 
-      <label>
+      <!-- <label>
         <div class="label-main">通訊地址</div>
         <input id="address" type="text" placeholder="例如：台南市東區成功路 123 號" />
+      </label> -->
+      <label>
+        <div class="label-main">通訊地址</div>
+
+        <div style="margin-top:8px; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+          <select id="addrCity" style="flex:1; min-width:180px;">
+            <option value="">請選擇縣市</option>
+          </select>
+
+          <select id="addrDistrict" style="flex:1; min-width:180px;" disabled>
+            <option value="">請先選縣市</option>
+          </select>
+        </div>
+
+        <!-- 先求有：把選到的值串成一段（之後要送後端/回寫 DB 再用） -->
+        <input id="address" type="hidden" value="" />
       </label>
 
       <!-- CAPTCHA -->
@@ -196,6 +212,7 @@
       // 7) init captcha/otp
       resetCaptcha();
       resetOtp();
+      initAddressDropdown(); // 地址下拉選單初始化
 
       // 8) wire input events
       [nameInput, phoneInput].forEach(el => el.addEventListener("input", refreshSubmitState));
@@ -343,28 +360,28 @@ btnOtpSend.addEventListener("click", async () => {
         return;
       }
 
-// 只送四個重要參數 + check_token（先求有）
-const payload4 = {
-  lineOAID: oaid,
-  lineUid: liffProfile?.userId || "",
-  name: nameInput.value.trim(),
-  phone: normalizePhone(phoneInput.value),
-  check_token: checkToken || "",
-};
+      // 只送四個重要參數 + check_token（先求有）
+      const payload4 = {
+        lineOAID: oaid,
+        lineUid: liffProfile?.userId || "",
+        name: nameInput.value.trim(),
+        phone: normalizePhone(phoneInput.value),
+        check_token: checkToken || "",
+      };
 
-if (!payload4.check_token) {
-  dbg("submit blocked: missing check_token");
-  setStatus("請先完成 OTP 驗證", "error");
-  return;
-}
+      if (!payload4.check_token) {
+        dbg("submit blocked: missing check_token");
+        setStatus("請先完成 OTP 驗證", "error");
+        return;
+      }
 
-// GET：改用 query string
-const url = new URL(`${API_BIND}/submit`);
-url.searchParams.set("lineOAID", payload4.lineOAID);
-url.searchParams.set("lineUid", payload4.lineUid);
-url.searchParams.set("name", payload4.name);
-url.searchParams.set("phone", payload4.phone);
-url.searchParams.set("check_token", payload4.check_token);
+      // GET：改用 query string
+      const url = new URL(`${API_BIND}/submit`);
+      url.searchParams.set("lineOAID", payload4.lineOAID);
+      url.searchParams.set("lineUid", payload4.lineUid);
+      url.searchParams.set("name", payload4.name);
+      url.searchParams.set("phone", payload4.phone);
+      url.searchParams.set("check_token", payload4.check_token);
 
       try {
         setStatus("送出中…", "");
