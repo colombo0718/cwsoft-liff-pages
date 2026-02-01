@@ -12,7 +12,7 @@
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 </head>
 
-<body>
+<body>  
   <div class="card">
     <div class="card-header">
       <div class="dot"></div>
@@ -27,36 +27,39 @@
 
     <form id="member-form" autocomplete="off">
       <!-- 基本資料 -->
-      <label>
-        <div class="label-main req">姓名 *</div>
-        <input id="name" type="text" placeholder="例如：趙士豪" />
-      </label>
+      <div class="block">
+        <div class="block-title">👤 基本資料</div>
+        <label>
+          <div class="label-main">姓名 </div>
+          <input id="name" type="text" placeholder="例如：趙士豪" />
+        </label>
 
-      <label>
-        <div class="label-main req">手機 *</div>
-        <input id="phone" type="tel" placeholder="例如：0912-345-678" />
-      </label>
+        <label>
+          <div class="label-main">手機 </div>
+          <input id="phone" type="tel" placeholder="例如：0912-345-678" />
+        </label>
 
-      <!-- <label>
-        <div class="label-main">通訊地址</div>
-        <input id="address" type="text" placeholder="例如：台南市東區成功路 123 號" />
-      </label> -->
-      <label>
-        <div class="label-main">地址</div>
+        <!-- <label>
+          <div class="label-main">通訊地址</div>
+          <input id="address" type="text" placeholder="例如：台南市東區成功路 123 號" />
+        </label> -->
+        <label>
+          <div class="label-main">地址</div>
 
-        <div style="margin-top:8px; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
-          <select id="addrCity" style="flex:1; min-width:100px;">
-            <option value="">選擇縣市</option>
-          </select>
+          <div style="margin-top:8px; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+            <select id="addrCity" style="flex:1; min-width:100px;">
+              <option value="">選擇縣市</option>
+            </select>
 
-          <select id="addrDistrict" style="flex:1; min-width:100px;" disabled>
-            <option value="">先選縣市</option>
-          </select>
-        </div>
-
-        <!-- 先求有：把選到的值串成一段（之後要送後端/回寫 DB 再用） -->
-        <input id="address" type="hidden" value="" />
-      </label>
+            <select id="addrDistrict" style="flex:1; min-width:100px;" disabled>
+              <option value="">先選縣市</option>
+            </select>
+          </div>
+        
+          <!-- 先求有：把選到的值串成一段（之後要送後端/回寫 DB 再用） -->
+          <input id="address" type="hidden" value="" />
+        </label>
+      </div>
 
       <!-- CAPTCHA -->
       <div class="section">
