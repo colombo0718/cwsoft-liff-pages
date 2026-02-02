@@ -55,7 +55,7 @@
       captchaVerified = false;
       captchaInput.value = "";
       drawCaptcha(captchaCode);
-      setInline(captchaVerifyStatus, "尚未驗證", "");
+    //   setInline(captchaVerifyStatus, "尚未驗證", "");
       dbg("CAPTCHA reset");
       refreshSubmitState();
     }
