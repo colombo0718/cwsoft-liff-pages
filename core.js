@@ -9,8 +9,8 @@
     const captchaCanvas = $("captchaCanvas");
     const btnCaptchaRefresh = $("btn-captcha-refresh");
     const captchaInput = $("captchaInput");
-    const btnCaptchaVerify = $("btn-captcha-verify");
-    const captchaVerifyStatus = $("captchaVerifyStatus");
+    // const btnCaptchaVerify = $("btn-captcha-verify");
+    // const captchaVerifyStatus = $("captchaVerifyStatus");
 
     const btnOtpSend = $("btn-otp-send");
     const otpSendStatus = $("otpSendStatus");
@@ -141,8 +141,8 @@
     function resetOtp() {
       otpVerified = false;
       otpInput.value = "";
-      setInline(otpSendStatus, "尚未發送", "");
-      setInline(otpVerifyStatus, "尚未驗證", "");
+    //   setInline(otpSendStatus, "尚未發送", "");
+    //   setInline(otpVerifyStatus, "尚未驗證", "");
       refreshSubmitState();
     }
 
