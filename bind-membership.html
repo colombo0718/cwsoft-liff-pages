@@ -14,13 +14,7 @@
 
 <body>  
   <div class="card">  
-
-
         <h1>綁定會員</h1>
-
-
-
-
     <form id="member-form" autocomplete="off">
       <!-- 基本資料 -->
       <div class="block">
@@ -29,12 +23,12 @@
             請填寫會員資料，並完成驗證。<br />
           </div>
         <label>
-          <div class="label-main">姓名 </div>
+          <div class="label-main req">姓名 </div>
           <input id="name" type="text" placeholder="例如：趙士豪" />
         </label>
 
         <label>
-          <div class="label-main">手機 </div>
+          <div class="label-main req">手機 </div>
           <input id="phone" type="tel" placeholder="例如：0912-345-678" />
         </label>
 
@@ -88,10 +82,10 @@
 
         <!-- OTP -->
         <div class="section">
-          <div class="mini">📲 OTP 簡訊驗證</div>
+          <!-- <div class="mini">📲 OTP 簡訊驗證</div>
           <div class="mini">
             點「取得 OTP」會呼叫後端 /otp 發送簡訊（目前先求有：verify 先用格式判斷）。
-          </div>
+          </div> -->
 
           <div style="margin-top:10px; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
             <button type="button" class="btn small" id="btn-otp-send">取得 OTP</button>
