@@ -131,7 +131,7 @@
   <script src="./captcha.js"></script>
   <script>
     // ====== Config ======
-    const LIFF_ID = "2008039127-p7We0QWm"; // 你的 LIFF ID
+    const LIFF_ID = "2008039127-VV7xY5jY"; // 你的 LIFF ID
     
     const API_OTP       = "https://cwsoft.leaflune.org/otp";
     const API_BIND      = "https://cwsoft.leaflune.org/bind";
@@ -241,7 +241,7 @@
     });
 
 btnOtpSend.addEventListener("click", async () => {
-  setInline(otpSendStatus, "發送中…", "");
+  // setInline(otpSendStatus, "發送中…", "");
   dbg("OTP：send request...");
 
   const lineOAID = (oaid || "").trim();
