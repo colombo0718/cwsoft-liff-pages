@@ -9,7 +9,7 @@
     const captchaCanvas = $("captchaCanvas");
     const btnCaptchaRefresh = $("btn-captcha-refresh");
     const captchaInput = $("captchaInput");
-    // const btnCaptchaVerify = $("btn-captcha-verify");
+    const btnCaptchaVerify = $("btn-captcha-verify");
     // const captchaVerifyStatus = $("captchaVerifyStatus");
 
     const btnOtpSend = $("btn-otp-send");
