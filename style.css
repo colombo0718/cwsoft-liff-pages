@@ -325,3 +325,5 @@ canvas{
 
 /* 若你想在開發時顯示 debug：body 加上 class="debug" */
 body.debug .debug-area{ display:block; }
+
+#btn-captcha-verify{ display:none !important; }

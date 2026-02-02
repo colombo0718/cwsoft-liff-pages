@@ -20,7 +20,7 @@
       <div class="block">
         <div class="block-title">👤 基本資料</div>
         <div class="hint">
-          請填寫會員資料。<br />
+          請填寫會員資料<br />
         </div>
         <label>
           <div class="label-main req">姓名* </div>
@@ -60,7 +60,7 @@
         <div class="block-title">🛡️ 安全驗證</div>
         <div class="section">
                   <div class="hint">
-          請填完成安全驗證<br />
+          請完成安全驗證<br />
         </div>
 
           <div class="captchaBox" style="margin-top:10px;">
@@ -77,7 +77,7 @@
           <!-- 這行用 inline flex，避免依賴 .row -->
           <div style="margin-top:10px; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
 
-            <button type="button" class="btn small" id="btn-captcha-verify">驗證圖片碼</button>
+            <!-- <button type="button" class="btn small" id="btn-captcha-verify">驗證圖片碼</button> -->
             <!-- <span id="captchaVerifyStatus"
                   style="font-size:12px; color:var(--muted); min-width:90px;">尚未驗證</span> -->
           </div>
@@ -224,21 +224,21 @@
     // ====== Events ======
     btnCaptchaRefresh.addEventListener("click", () => resetCaptcha());
 
-    btnCaptchaVerify.addEventListener("click", () => {
-      const v = (captchaInput.value || "").trim();
-      if (v === captchaCode) {
-        captchaVerified = true;
-        dbg("CAPTCHA：驗證成功");
-        // setInline(captchaVerifyStatus, "驗證成功", "ok");
-      } else {
-        captchaVerified = false;
-        dbg(`CAPTCHA：驗證失敗 (input=${v || "empty"})`);
-        // setInline(captchaVerifyStatus, "驗證失敗", "bad");
-        // 可選：失敗就換一張，降低暴力嘗試
-        resetCaptcha();
-      }
-      refreshSubmitState();
-    });
+    // btnCaptchaVerify.addEventListener("click", () => {
+    //   const v = (captchaInput.value || "").trim();
+    //   if (v === captchaCode) {
+    //     captchaVerified = true;
+    //     dbg("CAPTCHA：驗證成功");
+    //     // setInline(captchaVerifyStatus, "驗證成功", "ok");
+    //   } else {
+    //     captchaVerified = false;
+    //     dbg(`CAPTCHA：驗證失敗 (input=${v || "empty"})`);
+    //     // setInline(captchaVerifyStatus, "驗證失敗", "bad");
+    //     // 可選：失敗就換一張，降低暴力嘗試
+    //     resetCaptcha();
+    //   }
+    //   refreshSubmitState();
+    // });
 
 btnOtpSend.addEventListener("click", async () => {
   // setInline(otpSendStatus, "發送中…", "");
@@ -253,7 +253,7 @@ btnOtpSend.addEventListener("click", async () => {
     url.searchParams.set("lineOAID", lineOAID);
     url.searchParams.set("phone", phone);
     url.searchParams.set("db_name", db_name); // ✅ 新增
-
+    console.log(db_name,phone)
     const res = await fetch(url.toString(), {
       method: "GET",
       mode: "cors",
@@ -264,10 +264,10 @@ btnOtpSend.addEventListener("click", async () => {
     const data = await res.json();
     console.log("otp send resp:", data);
 
-    setInline(otpSendStatus, "已發送（先求有）", "ok");
+    // setInline(otpSendStatus, "已發送（先求有）", "ok");
     dbg("OTP：send ok");
   } catch (e) {
-    setInline(otpSendStatus, "發送失敗", "bad");
+    // setInline(otpSendStatus, "發送失敗", "bad");
     dbg(`OTP：send failed: ${e?.message || e}`);
   }
 });
