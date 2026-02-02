@@ -19,9 +19,9 @@
       <!-- 基本資料 -->
       <div class="block">
         <div class="block-title">👤 基本資料</div>
-          <div class="hint">
-            請填寫會員資料，並完成驗證。<br />
-          </div>
+        <div class="hint">
+          請填寫會員資料。<br />
+        </div>
         <label>
           <div class="label-main req">姓名* </div>
           <input id="name" type="text" placeholder="例如：趙士豪" />
@@ -59,7 +59,9 @@
         <!-- CAPTCHA -->
         <div class="block-title">🛡️ 安全驗證</div>
         <div class="section">
-          <div class="mini">請輸入圖片中的 4 位數字（先求有：前端隨機產生）</div>
+                  <div class="hint">
+          請填完成安全驗證<br />
+        </div>
 
           <div class="captchaBox" style="margin-top:10px;">
             <button type="button" class="btn small" id="btn-captcha-refresh">⟳</button>
@@ -67,7 +69,7 @@
             <input id="captchaInput"
                   type="text"
                   inputmode="numeric"
-                  placeholder="輸入上圖中的四位數字"
+                  placeholder="輸入左側圖片數字"
                   maxlength="4"
                   style="flex:1; min-width:180px;" />
           </div>
