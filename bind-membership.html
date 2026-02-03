@@ -100,11 +100,11 @@
             <!-- <span id="otpSendStatus" style="font-size:12px; color:var(--muted); min-width:120px;">尚未發送</span> -->
           </div>
 
-          <div style="margin-top:10px; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+          <!-- <div style="margin-top:10px; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
 
             <button type="button" class="btn small" id="btn-otp-verify">驗證 OTP</button>
             <span id="otpVerifyStatus" style="font-size:12px; color:var(--muted); min-width:90px;">尚未驗證</span>
-          </div>
+          </div> -->
       </div>
 
       <!-- 送出 -->
@@ -310,83 +310,83 @@ btnOtpSend.addEventListener("click", async () => {
   }
 });
 
-    btnOtpVerify.addEventListener("click", async () => {
-      const v = (otpInput.value || "").trim();
-      const phone = normalizePhone(phoneInput.value);
+    // btnOtpVerify.addEventListener("click", async () => {
+    //   const v = (otpInput.value || "").trim();
+    //   const phone = normalizePhone(phoneInput.value);
 
-      // 先做基本格式檢查
-      if (!/^\d{6}$/.test(v)) {
-        otpVerified = false;
-        setInline(otpVerifyStatus, "驗證失敗：需 6 位數字", "bad");
-        dbg("OTP：verify failed (need 6 digits)");
-        refreshSubmitState();
-        return;
-      }
-      if (!phone) {
-        otpVerified = false;
-        setInline(otpVerifyStatus, "驗證失敗：請先填手機號碼", "bad");
-        dbg("OTP：verify failed (no phone)");
-        refreshSubmitState();
-        return;
-      }
+    //   // 先做基本格式檢查
+    //   if (!/^\d{6}$/.test(v)) {
+    //     otpVerified = false;
+    //     setInline(otpVerifyStatus, "驗證失敗：需 6 位數字", "bad");
+    //     dbg("OTP：verify failed (need 6 digits)");
+    //     refreshSubmitState();
+    //     return;
+    //   }
+    //   if (!phone) {
+    //     otpVerified = false;
+    //     setInline(otpVerifyStatus, "驗證失敗：請先填手機號碼", "bad");
+    //     dbg("OTP：verify failed (no phone)");
+    //     refreshSubmitState();
+    //     return;
+    //   }
 
-      try {
-        setInline(otpVerifyStatus, "驗證中…", "");
-        dbg("OTP：check request...");
+    //   try {
+    //     setInline(otpVerifyStatus, "驗證中…", "");
+    //     dbg("OTP：check request...");
 
-        // GET + query string
-        const url = new URL(`${API_OTP}/check`);
-        url.searchParams.set("phone", phone);
-        url.searchParams.set("otp", v);
+    //     // GET + query string
+    //     const url = new URL(`${API_OTP}/check`);
+    //     url.searchParams.set("phone", phone);
+    //     url.searchParams.set("otp", v);
 
-        const res = await fetch(url.toString(), {
-          method: "GET",
-          mode: "cors",
-          cache: "no-store",
-        });
+    //     const res = await fetch(url.toString(), {
+    //       method: "GET",
+    //       mode: "cors",
+    //       cache: "no-store",
+    //     });
 
-        const data = await res.json().catch(() => ({}));
-        dbg("OTP：check resp:");
-        dbg(JSON.stringify(data));
+    //     const data = await res.json().catch(() => ({}));
+    //     dbg("OTP：check resp:");
+    //     dbg(JSON.stringify(data));
 
-        if (!res.ok || !data?.ok) {
-          otpVerified = false;
+    //     if (!res.ok || !data?.ok) {
+    //       otpVerified = false;
 
-          // 依後端 error 類型顯示訊息（先求有）
-          const err = data?.error || `HTTP ${res.status}`;
-          if (err.includes("expired")) {
-            setInline(otpVerifyStatus, "驗證失敗：驗證碼已過期，請重新取得", "bad");
-          } else if (err.includes("mismatch")) {
-            setInline(otpVerifyStatus, "驗證失敗：驗證碼不正確", "bad");
-          } else if (err.includes("no otp record")) {
-            setInline(otpVerifyStatus, "驗證失敗：請先取得驗證碼", "bad");
-          } else {
-            setInline(otpVerifyStatus, "驗證失敗", "bad");
-          }
+    //       // 依後端 error 類型顯示訊息（先求有）
+    //       const err = data?.error || `HTTP ${res.status}`;
+    //       if (err.includes("expired")) {
+    //         setInline(otpVerifyStatus, "驗證失敗：驗證碼已過期，請重新取得", "bad");
+    //       } else if (err.includes("mismatch")) {
+    //         setInline(otpVerifyStatus, "驗證失敗：驗證碼不正確", "bad");
+    //       } else if (err.includes("no otp record")) {
+    //         setInline(otpVerifyStatus, "驗證失敗：請先取得驗證碼", "bad");
+    //       } else {
+    //         setInline(otpVerifyStatus, "驗證失敗", "bad");
+    //       }
 
-          dbg(`OTP：verify failed: ${err}`);
-        } else {
-          // ✅ 成功：拿到 check_token，當成 checkToken
-          checkToken = data.check_token || "";
-          otpVerified = !!checkToken;
+    //       dbg(`OTP：verify failed: ${err}`);
+    //     } else {
+    //       // ✅ 成功：拿到 check_token，當成 checkToken
+    //       checkToken = data.check_token || "";
+    //       otpVerified = !!checkToken;
 
-          if (otpVerified) {
-            setInline(otpVerifyStatus, "驗證成功", "ok");
-            dbg("OTP：verify ok (backend check_token received)");
-          } else {
-            // 理論上不該發生
-            setInline(otpVerifyStatus, "驗證失敗：未取得 token", "bad");
-            dbg("OTP：verify failed (no check_token)");
-          }
-        }
-      } catch (e) {
-        otpVerified = false;
-        setInline(otpVerifyStatus, "驗證失敗：網路或伺服器錯誤", "bad");
-        dbg(`OTP：check failed: ${e?.message || e}`);
-      }
+    //       if (otpVerified) {
+    //         setInline(otpVerifyStatus, "驗證成功", "ok");
+    //         dbg("OTP：verify ok (backend check_token received)");
+    //       } else {
+    //         // 理論上不該發生
+    //         setInline(otpVerifyStatus, "驗證失敗：未取得 token", "bad");
+    //         dbg("OTP：verify failed (no check_token)");
+    //       }
+    //     }
+    //   } catch (e) {
+    //     otpVerified = false;
+    //     setInline(otpVerifyStatus, "驗證失敗：網路或伺服器錯誤", "bad");
+    //     dbg(`OTP：check failed: ${e?.message || e}`);
+    //   }
 
-      refreshSubmitState();
-    });
+    //   refreshSubmitState();
+    // });
 
     form.addEventListener("submit", async (e) => {
       e.preventDefault();

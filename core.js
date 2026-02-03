@@ -15,8 +15,8 @@
     const btnOtpSend = $("btn-otp-send");
     const otpSendStatus = $("otpSendStatus");
     const otpInput = $("otpInput");
-    const btnOtpVerify = $("btn-otp-verify");
-    const otpVerifyStatus = $("otpVerifyStatus");
+    // const btnOtpVerify = $("btn-otp-verify");
+    // const otpVerifyStatus = $("otpVerifyStatus");
 
     const btnSubmit = $("btn-submit");
     const statusEl = $("status");
@@ -68,7 +68,8 @@
 
     function lockAllUI() {
       [nameInput, phoneInput, addressInput, captchaInput, otpInput].forEach(el => el.disabled = true);
-      [btnCaptchaRefresh, btnCaptchaVerify, btnOtpSend, btnOtpVerify, btnSubmit].forEach(el => el.disabled = true);
+    //   [btnCaptchaRefresh, btnCaptchaVerify, btnOtpSend, btnOtpVerify, btnSubmit].forEach(el => el.disabled = true);
+      [btnCaptchaRefresh, btnCaptchaVerify, btnOtpSend, btnSubmit].forEach(el => el.disabled = true);
     }
 
     function dbLooksOk(db) {
