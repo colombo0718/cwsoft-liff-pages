@@ -217,7 +217,7 @@ function initAddressDropdown() {
 
     const opt0 = document.createElement("option");
     opt0.value = "";
-    opt0.textContent = "請選擇行政區";
+    opt0.textContent = "選擇區域";
     addrDistrictEl.appendChild(opt0);
 
     dists.forEach(d => {
