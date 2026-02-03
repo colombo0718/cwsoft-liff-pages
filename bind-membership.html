@@ -130,7 +130,7 @@
   <script src="./captcha.js"></script>
   <script>
     // ====== Config ======
-    const LIFF_ID_DEFAULT = "2008039127-p7We0QWm"; // 你的 LIFF ID
+    const LIFF_ID_DEFAULT = "2008039127-VV7xY5jY"; // 你的 LIFF ID
     
     const API_OTP       = "https://cwsoft.leaflune.org/otp";
     const API_BIND      = "https://cwsoft.leaflune.org/bind";
@@ -244,6 +244,39 @@
     //   }
     //   refreshSubmitState();
     // });
+function verifyCaptchaNow() {
+  const v = (captchaInput.value || "").trim();
+  if (v === captchaCode) {
+    captchaVerified = true;
+    dbg("CAPTCHA：驗證成功");
+    // setInline(captchaVerifyStatus, "驗證成功", "ok");
+  } else {
+    captchaVerified = false;
+    dbg(`CAPTCHA：驗證失敗 (input=${v || "empty"})`);
+    // setInline(captchaVerifyStatus, "驗證失敗", "bad");
+    // 可選：失敗就換一張，降低暴力嘗試
+    resetCaptcha();
+  }
+  refreshSubmitState();
+}
+
+captchaInput.addEventListener("input", () => {
+  // 只留數字（避免使用者輸入空白或其他字元）
+  const digits = (captchaInput.value || "").replace(/\D/g, "").slice(0, 4);
+
+  // 如果有清掉非數字，就回寫（保持 UI 一致）
+  if (captchaInput.value !== digits) captchaInput.value = digits;
+
+  // 未滿 4 碼：視為尚未驗證
+  if (digits.length < 4) {
+    captchaVerified = false;
+    refreshSubmitState();
+    return;
+  }
+
+  // 剛好 4 碼：自動驗證
+  verifyCaptchaNow();
+});
 
 btnOtpSend.addEventListener("click", async () => {
   // setInline(otpSendStatus, "發送中…", "");
