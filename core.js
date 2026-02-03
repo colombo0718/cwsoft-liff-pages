@@ -92,7 +92,7 @@
       dbg(canSubmit())
       btnSubmit.disabled = !canSubmit();
     }
-
+    
     function autofillNameFromLineProfile() {
       if (!liffProfile?.displayName) return;
 
