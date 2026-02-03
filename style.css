@@ -188,7 +188,7 @@ select option{
   min-height:var(--btn-h);
   padding:12px 14px;
   border:none;
-  border-radius:999px;
+  border-radius:999px;  
   cursor:pointer;
   background:linear-gradient(135deg,#22c55e,#4ade80);
   color:#022c22;

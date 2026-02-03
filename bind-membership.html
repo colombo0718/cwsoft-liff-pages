@@ -130,7 +130,7 @@
   <script src="./captcha.js"></script>
   <script>
     // ====== Config ======
-    const LIFF_ID = "2008039127-VV7xY5jY"; // 你的 LIFF ID
+    const LIFF_ID_DEFAULT = "2008039127-p7We0QWm"; // 你的 LIFF ID
     
     const API_OTP       = "https://cwsoft.leaflune.org/otp";
     const API_BIND      = "https://cwsoft.leaflune.org/bind";
@@ -138,6 +138,10 @@
     // 先求有：你之後會換成後端的一次性 token
     let checkToken = "DUMMY_TOKEN";
 
+
+    function getParam(name){
+      return new URLSearchParams(location.search).get(name) || "";
+    }
 
     // ====== Main init ======
     async function initAll() {
@@ -151,6 +155,8 @@
       await lookupDbNameByOaId(oaid);
 
       // 3) init LIFF
+
+      const LIFF_ID = getParam("liffId") || LIFF_ID_DEFAULT;
       try {
         await liff.init({ liffId: LIFF_ID });
         liffReady = true;
