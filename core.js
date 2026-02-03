@@ -89,7 +89,7 @@
     }
 
     function refreshSubmitState() {
-      console.log(canSubmit())
+      dbg(canSubmit())
       btnSubmit.disabled = !canSubmit();
     }
 
