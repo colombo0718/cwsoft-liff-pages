@@ -220,7 +220,16 @@
       // 8) wire input events
       [nameInput, phoneInput].forEach(el => el.addEventListener("input", refreshSubmitState));
       captchaInput.addEventListener("input", refreshSubmitState);
-      otpInput.addEventListener("input", refreshSubmitState);
+
+      otpInput.addEventListener("input", () => {
+
+        const digits = (otpInput.value || "").replace(/\D/g, "").slice(0, 6);
+        
+        if (otpInput.value !== digits) otpInput.value = digits;
+        // console.log(digits)
+        console.log(canSubmit())
+        refreshSubmitState();
+      });
 
       refreshSubmitState();
       dbg("init done");
@@ -388,69 +397,156 @@ btnOtpSend.addEventListener("click", async () => {
     //   refreshSubmitState();
     // });
 
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      if (!canSubmit()) {
-        dbg("submit blocked: canSubmit=false");
-        setStatus("條件尚未完成，無法送出。", "error");
-        return;
-      }
+    // form.addEventListener("submit", async (e) => {
+    //   e.preventDefault();
+    //   if (!canSubmit()) {
+    //     dbg("submit blocked: canSubmit=false");
+    //     setStatus("條件尚未完成，無法送出。", "error");
+    //     return;
+    //   }
 
-      // 只送四個重要參數 + check_token（先求有）
-      const payload4 = {
-        lineOAID: oaid,
-        lineUid: liffProfile?.userId || "",
-        name: nameInput.value.trim(),
-        phone: normalizePhone(phoneInput.value),
-        check_token: checkToken || "",
-      };
+    //   // 只送四個重要參數 + check_token（先求有）
+    //   const payload4 = {
+    //     lineOAID: oaid,
+    //     lineUid: liffProfile?.userId || "",
+    //     name: nameInput.value.trim(),
+    //     phone: normalizePhone(phoneInput.value),
+    //     check_token: checkToken || "",
+    //   };
 
-      if (!payload4.check_token) {
-        dbg("submit blocked: missing check_token");
-        setStatus("請先完成 OTP 驗證", "error");
-        return;
-      }
+    //   if (!payload4.check_token) {
+    //     dbg("submit blocked: missing check_token");
+    //     setStatus("請先完成 OTP 驗證", "error");
+    //     return;
+    //   }
 
-      // GET：改用 query string
-      const url = new URL(`${API_BIND}/submit`);
-      url.searchParams.set("lineOAID", payload4.lineOAID);
-      url.searchParams.set("lineUid", payload4.lineUid);
-      url.searchParams.set("name", payload4.name);
-      url.searchParams.set("phone", payload4.phone);
-      url.searchParams.set("check_token", payload4.check_token);
+    //   // GET：改用 query string
+    //   const url = new URL(`${API_BIND}/submit`);
+    //   url.searchParams.set("lineOAID", payload4.lineOAID);
+    //   url.searchParams.set("lineUid", payload4.lineUid);
+    //   url.searchParams.set("name", payload4.name);
+    //   url.searchParams.set("phone", payload4.phone);
+    //   url.searchParams.set("check_token", payload4.check_token);
 
-      try {
-        setStatus("送出中…", "");
+    //   try {
+    //     setStatus("送出中…", "");
 
-        // GET：改用 query string
-        // const url = new URL(`${API_BIND}/submit`); // 例：https://cwsoft.leaflune.org/bind/submit
-        // url.searchParams.set("lineOAID", payload4.lineOAID);
-        // url.searchParams.set("lineUid", payload4.lineUid);
-        // url.searchParams.set("name", payload4.name);
-        // url.searchParams.set("phone", payload4.phone);
+    //     // GET：改用 query string
+    //     // const url = new URL(`${API_BIND}/submit`); // 例：https://cwsoft.leaflune.org/bind/submit
+    //     // url.searchParams.set("lineOAID", payload4.lineOAID);
+    //     // url.searchParams.set("lineUid", payload4.lineUid);
+    //     // url.searchParams.set("name", payload4.name);
+    //     // url.searchParams.set("phone", payload4.phone);
 
-        const res = await fetch(url.toString(), {
-          method: "GET",
-          mode: "cors",
-          cache: "no-store",
-        });
+    //     const res = await fetch(url.toString(), {
+    //       method: "GET",
+    //       mode: "cors",
+    //       cache: "no-store",
+    //     });
 
-        // 後端回 json 的話就讀出來方便 debug
-        const data = await res.json().catch(() => null);
+    //     // 後端回 json 的話就讀出來方便 debug
+    //     const data = await res.json().catch(() => null);
 
-        if (!res.ok) {
-          dbg("bind failed resp:");
-          dbg(JSON.stringify(data));
-          throw new Error(`HTTP ${res.status}`);
-        }
+    //     if (!res.ok) {
+    //       dbg("bind failed resp:");
+    //       dbg(JSON.stringify(data));
+    //       throw new Error(`HTTP ${res.status}`);
+    //     }
 
-        dbg("bind ok resp:");
-        dbg(JSON.stringify(data));
-        setStatus("綁定送出成功（先求有）", "ok");
-      } catch (err) {
-        setStatus(`綁定送出失敗：${err?.message || err}`, "error");
-      }
+    //     dbg("bind ok resp:");
+    //     dbg(JSON.stringify(data));
+    //     setStatus("綁定送出成功（先求有）", "ok");
+    //   } catch (err) {
+    //     setStatus(`綁定送出失敗：${err?.message || err}`, "error");
+    //   }
+    // });
+
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  if (!canSubmit()) {
+    dbg("submit blocked: canSubmit=false");
+    setStatus("條件尚未完成，無法送出。", "error");
+    return;
+  }
+
+  const phone = normalizePhone(phoneInput.value);
+  const otp = (otpInput.value || "").trim();
+
+  try {
+    setStatus("驗證 OTP 中…", "");
+
+    // ✅ Step 1：送出時才做 OTP check
+    const urlCheck = new URL(`${API_OTP}/check`);
+    urlCheck.searchParams.set("phone", phone);
+    urlCheck.searchParams.set("otp", otp);
+
+    const resCheck = await fetch(urlCheck.toString(), {
+      method: "GET",
+      mode: "cors",
+      cache: "no-store",
     });
+
+    const dataCheck = await resCheck.json().catch(() => ({}));
+    dbg("OTP：check resp:");
+    dbg(JSON.stringify(dataCheck));
+
+    if (!resCheck.ok || !dataCheck?.ok) {
+      const err = dataCheck?.error || `HTTP ${resCheck.status}`;
+      dbg(`OTP：check failed: ${err}`);
+
+      // 你原本的錯誤文案我沿用（先求有）
+      if (String(err).includes("expired")) {
+        setStatus("驗證失敗：驗證碼已過期，請重新取得", "error");
+      } else if (String(err).includes("mismatch")) {
+        setStatus("驗證失敗：驗證碼不正確", "error");
+      } else if (String(err).includes("no otp record")) {
+        setStatus("驗證失敗：請先取得驗證碼", "error");
+      } else {
+        setStatus("驗證失敗", "error");
+      }
+      return;
+    }
+
+    // ✅ 成功：拿 check_token
+    checkToken = dataCheck.check_token || "";
+    if (!checkToken) {
+      dbg("OTP：check ok but missing check_token");
+      setStatus("驗證失敗：未取得 token", "error");
+      return;
+    }
+
+    // ✅ Step 2：OTP OK 後才送 bind
+    setStatus("送出中…", "");
+
+    const urlBind = new URL(`${API_BIND}/submit`);
+    urlBind.searchParams.set("lineOAID", oaid);
+    urlBind.searchParams.set("lineUid", liffProfile?.userId || "");
+    urlBind.searchParams.set("name", nameInput.value.trim());
+    urlBind.searchParams.set("phone", phone);
+    urlBind.searchParams.set("check_token", checkToken);
+
+    const res = await fetch(urlBind.toString(), {
+      method: "GET",
+      mode: "cors",
+      cache: "no-store",
+    });
+
+    const data = await res.json().catch(() => null);
+
+    if (!res.ok) {
+      dbg("bind failed resp:");
+      dbg(JSON.stringify(data));
+      throw new Error(`HTTP ${res.status}`);
+    }
+
+    dbg("bind ok resp:");
+    dbg(JSON.stringify(data));
+    setStatus("綁定送出成功（先求有）", "success");
+  } catch (err) {
+    setStatus(`綁定送出失敗：${err?.message || err}`, "error");
+  }
+});
 
     // Boot
     initAll();
