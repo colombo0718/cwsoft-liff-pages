@@ -130,7 +130,7 @@
   <script src="./captcha.js"></script>
   <script>
     // ====== Config ======
-    const LIFF_ID_DEFAULT = "2008039127-VV7xY5jY"; // 你的 LIFF ID
+    const LIFF_ID_DEFAULT = "2008039127-p7We0QWm"; // 你的 LIFF ID
     
     const API_OTP       = "https://cwsoft.leaflune.org/otp";
     const API_BIND      = "https://cwsoft.leaflune.org/bind";
@@ -158,6 +158,7 @@
 
       const LIFF_ID = getParam("liffId") || LIFF_ID_DEFAULT;
       try {
+        console.log(LIFF_ID)
         await liff.init({ liffId: LIFF_ID });
         liffReady = true;
         dbg("LIFF：已初始化");
@@ -316,7 +317,7 @@ btnOtpSend.addEventListener("click", async () => {
         const digits = (otpInput.value || "").replace(/\D/g, "").slice(0, 6);
         
         if (otpInput.value !== digits) otpInput.value = digits;
-        console.log(digits)
+        // console.log(digits)
         console.log(canSubmit())
         refreshSubmitState();
       });
