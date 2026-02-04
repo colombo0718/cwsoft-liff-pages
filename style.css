@@ -86,6 +86,12 @@ input:focus, textarea:focus, select:focus{
   border-color:var(--brand);
 }
 
+/* Disabled */
+input[disabled], textarea[disabled], select[disabled], button[disabled]{
+  opacity:.55;
+  cursor:not-allowed;
+}
+
 /* ===== 按鈕 ===== */
 
 .btn{
