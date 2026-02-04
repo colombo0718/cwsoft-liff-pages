@@ -3,14 +3,13 @@
 
   /* 背景 */
   --bg: white;        /* 頁面背景色 */
-  --card: white;      /* 卡片背景色 */
 
   /* 文字 */
   --text: black;      /* 主要文字顏色 */
   --muted: gray;      /* 次要說明文字顏色 */
 
   /* 線條 / 邊框 */
-  --line: #ddd;       /* 邊框、分隔線顏色 */
+  --line: gray;       /* 邊框、分隔線顏色 */
 
   /* 狀態 / 強調色 */
   --brand: orange;    /* 主要操作色（按鈕、焦點） */
@@ -55,9 +54,9 @@ body{
 .card{
   width:100%;
   max-width:var(--card-w);
-  background:var(--card);
-  border:1px solid var(--line);
-  border-radius:var(--radius);
+  background:var(--bg);
+  border:none;
+  border-radius:0;
   padding:var(--space);            /* 元件與卡片邊框距離 */
 }
 
