@@ -69,8 +69,7 @@ form{
 
 /* ===== 互動元件 ===== */
 
-input, textarea, select{
-  /* width:100%; */
+input, textarea, select, .btn{
   height:var(--ui-h);
   border-radius:var(--radius);
   font-size:var(--body-size);
