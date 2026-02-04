@@ -37,7 +37,7 @@
         ctx.translate(x, y);
         ctx.rotate(angle);
         ctx.font = `800 ${size}px system-ui, -apple-system, Segoe UI`;
-        ctx.fillStyle = "rgba(255,255,255,0.92)";
+        ctx.fillStyle = "rgba(150,150,150,0.92)";
         ctx.textBaseline = "middle";
         ctx.fillText(ch, 0, 0);
         ctx.restore();
