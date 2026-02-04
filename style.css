@@ -23,15 +23,21 @@
   --label-size: 15px; /* 小標題、欄位標籤 */
   --body-size: 18px;  /* 內文、輸入框、按鈕文字 */
 
-  /* ===== 元件尺寸 ===== */
+  /* ===== 元件尺寸 / 間距 ===== */
 
-  --ui-h: 50px;   /* 所有互動元件高度：input / select / textarea / button */
+  --ui-h: 50px;       /* 所有互動元件高度：input / select / textarea / button */
   --radius: 14px;     /* 元件圓角半徑 */
+  --space: 10px;      /* 統一距離：元件與元件、元件與邊框 */
+  --pad-x: 10px;      /* 元件內容左右留白（不影響高度） */
 
-  --space: 10px;     /* 統一距離：元件與元件、元件與邊框 */
-  --pad-x: 10px;     /* 元件內容左右留白（不影響高度） */
+  /* ===== 版面限制 ===== */
 
+  --card-w: 480px;    /* 卡片最大寬度（固定手機視覺） */
 }
+
+/* ===== 基本設定 ===== */
+
+*{ box-sizing: border-box; }
 
 body{
   margin:0;
@@ -39,106 +45,85 @@ body{
   display:flex;
   align-items:center;
   justify-content:center;
-
-  /* padding:18px; */ /* 固定數字：頁面四周留白 */
-
   background:var(--bg);
   color:var(--text);
   font-size:var(--body-size);
 }
 
+/* ===== 主要容器 ===== */
+
 .card{
   width:100%;
-
-  max-width:480px; /* 固定數字：卡片最大寬度 */
-
+  max-width:var(--card-w);
   background:var(--card);
-
-  /* border:1px solid var(--line); */ /* 固定數字：邊框粗細 */
-
+  border:1px solid var(--line);
   border-radius:var(--radius);
-
-  padding:var(--space);
-}
-
-input, textarea, select{
-  padding:0 var(--pad-x);
-  height:var(--ui-h);
-  width:100%;
-  min-height:var(--ui-h);
-
-  /* padding:10px 12px; */ /* 固定數字：輸入框內距 */
-  padding:0;
-  border-radius:var(--radius);
-
-  border:1px solid var(--line); /* 固定數字：邊框粗細 */
-
-  background:var(--card);
-  color:var(--text);
-  font-size:var(--body-size);
-  outline:none;
-}
-
-input:focus, textarea:focus, select:focus{
-  border-color:var(--brand);
-}
-
-.btn{
-  /* margin-top:6px; */ /* 固定數字：按鈕上方留白 */
-
-  min-height:var(--ui-h);
-
-  /* padding:12px 14px; */ /* 固定數字：按鈕內距 */
-
-  border:none;
-  border-radius:var(--radius);
-  min-width:var(--ui-h);
-  cursor:pointer;
-  background:var(--brand);
-  color:var(--card);
-  font-size:var(--body-size);
-
-  /* font-weight:700; */ /* 固定數字：字重 */
-
-  display:flex;
-  align-items:center;
-  justify-content:center;
-
-  gap:var(--space); /* 固定數字：按鈕內元素間距 */
+  padding:var(--space);            /* 元件與卡片邊框距離 */
 }
 
 form{
   display:flex;
   flex-direction:column;
-  gap:var(--space);       /* ✅ 元件與元件距離 = 10px */
+  gap:var(--space);                /* 元件與元件距離（不會疊加） */
+}
+
+/* ===== 互動元件 ===== */
+
+input, textarea, select, .btn{
+  width:100%;
+  height:var(--ui-h);
+  border-radius:var(--radius);
+  font-size:var(--body-size);
+}
+
+input, textarea, select{
+  border:1px solid var(--line);
+  background:var(--card);
+  color:var(--text);
+  padding:0 var(--pad-x);          /* 只左右，不影響高度 */
+  outline:none;
+}
+
+/* focus 只保留一層（避免難看的雙框） */
+input:focus, textarea:focus, select:focus{
+  border-color:var(--brand);
+}
+
+/* ===== 按鈕 ===== */
+
+.btn{
+  min-width:var(--ui-h);           /* 最小寬度 = 統一高度 */
+  border:none;
+  background:var(--brand);
+  color:var(--card);
+  cursor:pointer;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:var(--space);
 }
 
 .btn:active{
-  transform:translateY(1px); /* 固定數字：按壓位移 */
+  transform:translateY(1px);       /* 按壓回饋 */
 }
+
+/* ===== 其他元件 ===== */
 
 canvas{
   border-radius:var(--radius);
-
-  border:1px solid var(--line); /* 固定數字：邊框粗細 */
-
+  border:1px solid var(--line);
   background:var(--bg);
 }
 
 .debug-box{
-  /* margin:8px 0 0; */ /* 固定數字：上方留白 */
-  /* padding:10px; */   /* 固定數字：內距 */
-
   border-radius:var(--radius);
-
-  border:1px solid var(--line); /* 固定數字：邊框粗細 */
-
+  border:1px solid var(--line);
   background:var(--bg);
-
-  /* max-height:180px; */ /* 固定數字：最大高度 */
-
   overflow:auto;
 }
+
+/* ===== 必填提示色 ===== */
 
 .label-main.req,
 .label-main.req .required{
