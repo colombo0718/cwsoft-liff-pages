@@ -1,54 +1,33 @@
 :root{
-  /* ===== Brand / Theme tokens (EDIT COLORS HERE ONLY) ===== */
-  --accent:#f97316;                 /* 橘：主色 */
-  --accent-2:#fb923c;               /* 橘：次色(漸層用) */
-  --accent-soft:rgba(249,115,22,.16);
-  --accent-glow:rgba(249,115,22,.35);
+  /* ===== 顏色設定 ===== */
 
-  --pos-blue:#2563eb;               /* req 藍 */
-  --danger:#ef4444;
+  /* 背景 */
+  --bg: white;        /* 頁面背景色 */
+  --card: white;      /* 卡片背景色 */
 
-  --text:#0f172a;                   /* 主要字色 */
-  --muted:#64748b;                  /* 次要字色 */
+  /* 文字 */
+  --text: black;      /* 主要文字顏色 */
+  --muted: gray;      /* 次要說明文字顏色 */
 
-  --card:#ffffff;                   /* 卡片底色 */
-  --input-bg:#ffffff;               /* input/select/textarea 底色 */
-  --page-bg:#f8fafc;                /* 頁面底色 */
-  --page-bg2:#eef2f7;               /* 頁面漸層第二色 */
+  /* 線條 / 邊框 */
+  --line: #ddd;       /* 邊框、分隔線顏色 */
 
-  --border:#e2e8f0;                 /* 一般框線 */
-  --border-soft:rgba(15,23,42,.10); /* 柔和框線(例如 canvas/debug) */
+  /* 狀態 / 強調色 */
+  --brand: orange;    /* 主要操作色（按鈕、焦點） */
+  --req: blue;        /* 必填欄位提示色 */
+  --danger: red;      /* 錯誤、警告色 */
 
-  /* ===== Derived visuals ===== */
-  --page-gradient:radial-gradient(circle at top,var(--page-bg2) 0,var(--page-bg) 55%,#ffffff 100%);
-  --card-shadow:0 22px 45px rgba(2,6,23,.10);
+  /* ===== 字體大小 ===== */
 
-  --dot-shadow:0 0 12px rgba(249,115,22,.55);
+  --title-size: 30px; /* 大標題（h1） */
+  --label-size: 15px; /* 小標題、欄位標籤 */
+  --body-size: 18px;  /* 內文、輸入框、按鈕文字 */
 
-  --focus-outline:rgba(249,115,22,.35);
-  --focus-ring:0 0 0 2px var(--accent-soft);
+  /* ===== 元件尺寸 ===== */
 
-  --btn-bg:linear-gradient(135deg,var(--accent),var(--accent-2));
-  --btn-text:#ffffff;
-  --btn-shadow:0 16px 30px var(--accent-glow);
-  --btn-shadow-active:0 8px 18px rgba(249,115,22,.40);
+  --ui-h: 50px;   /* 所有互動元件高度：input / select / textarea / button */
+  --radius: 14px;     /* 元件圓角半徑 */
 
-  --canvas-bg:rgba(15,23,42,.04);
-  --debug-bg:rgba(15,23,42,.04);
-
-  /* ===== Elder-friendly sizing ===== */
-  --fz-title:30px;
-  --fz-subtitle:14px;
-  --fz-hint:14px;
-  --fz-label:15px;
-  --fz-input:18px;
-  --fz-mini:14px;
-  --fz-status:14px;
-  --fz-btn:18px;
-
-  --ctrl-h:40px;
-  --btn-h:50px;
-  --radius:14px;
 }
 
 body{
@@ -58,94 +37,86 @@ body{
   align-items:center;
   justify-content:center;
   padding:18px;
+  background:var(--bg);
   color:var(--text);
-  font-size:16px;
-  background:var(--page-gradient);
+  font-size:var(--body-size);
 }
 
 .card{
   width:100%;
   max-width:480px;
   background:var(--card);
-  border:1px solid var(--border);
-  border-radius:18px;
+  border:1px solid var(--line);
+  border-radius:var(--radius);
   padding:22px 18px 18px;
-  box-shadow:var(--card-shadow);
 }
 
 .dot{
-  width:10px;height:10px;border-radius:999px;
-  background:var(--accent);
-  box-shadow:var(--dot-shadow);
+  width:10px;
+  height:10px;
+  border-radius:999px;
+  background:var(--brand);
 }
 
 input, textarea, select{
   width:100%;
-  min-height:var(--ctrl-h);
+  min-height:var(--ui-h);
   padding:10px 12px;
-  border-radius:12px;
-  border:1px solid var(--border);
-  background:var(--input-bg);
+  border-radius:var(--radius);
+  border:1px solid var(--line);
+  background:var(--card);
   color:var(--text);
-  font-size:var(--fz-input);
+  font-size:var(--body-size);
   outline:none;
 }
 
 input:focus, textarea:focus, select:focus{
-  border-color:var(--accent);
-  box-shadow:var(--focus-ring);
+  border-color:var(--brand);
 }
 
 input:focus-visible, textarea:focus-visible, select:focus-visible, button:focus-visible{
-  outline:2px solid var(--focus-outline);
+  outline:2px solid var(--brand);
   outline-offset:2px;
 }
 
 .btn{
   margin-top:6px;
-  min-height:var(--btn-h);
+  min-height:var(--ui-h);
   padding:12px 14px;
   border:none;
-  border-radius:999px;  
+  border-radius:999px;
   cursor:pointer;
-  background:var(--btn-bg);
-  color:var(--btn-text);
-  font-size:var(--fz-btn);
+  background:var(--brand);
+  color:var(--card);
+  font-size:var(--body-size);
   font-weight:700;
   display:flex;
   align-items:center;
   justify-content:center;
   gap:8px;
-  box-shadow:var(--btn-shadow);
-  transition:transform .12s ease, box-shadow .12s ease, filter .12s ease;
 }
 
 .btn:active{
-  transform:translateY(1px) scale(.99);
-  box-shadow:var(--btn-shadow-active);
-  filter:brightness(.96);
+  transform:translateY(1px);
 }
 
 canvas{
-  border-radius:12px;
-  border:1px solid var(--border-soft);
-  background:var(--canvas-bg);
+  border-radius:var(--radius);
+  border:1px solid var(--line);
+  background:var(--bg);
 }
 
 .debug-box{
   margin:8px 0 0;
   padding:10px;
-  border-radius:12px;
-  border:1px solid var(--border-soft);
-  background:var(--debug-bg);
+  border-radius:var(--radius);
+  border:1px solid var(--line);
+  background:var(--bg);
   max-height:180px;
   overflow:auto;
 }
 
-.label-main.req{
-  color: var(--pos-blue);
-}
-
+.label-main.req,
 .label-main.req .required{
-  color: var(--pos-blue);
+  color:var(--req);
 }
