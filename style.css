@@ -56,7 +56,6 @@ body{
   max-width:var(--card-w);
   background:var(--bg);
   border:none;
-  border-radius:0;
   padding:var(--space);            /* 元件與卡片邊框距離 */
 }
 
@@ -76,7 +75,7 @@ input, textarea, select, .btn{
 
 input, textarea, select{
   border:1px solid var(--line);
-  background:var(--card);
+  background:var(--bg);
   color:var(--text);
   padding:0 var(--pad-x);          /* 只左右，不影響高度 */
   outline:none;
@@ -93,7 +92,7 @@ input:focus, textarea:focus, select:focus{
   min-width:var(--ui-h);           /* 最小寬度 = 統一高度 */
   border:none;
   background:var(--brand);
-  color:var(--card);
+  color:var(--bg);
   cursor:pointer;
 
   display:flex;
@@ -125,5 +124,5 @@ canvas{
 
 .label-main.req,
 .label-main.req .required{
-  color:var(--req);
+  color:var(--required);
 }
