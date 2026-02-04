@@ -1,17 +1,15 @@
 /* style.css — Dark card UI + Green accent + Elder-friendly large typography */
 
-
-
 :root{
-  /* Theme (Light + Orange) */
-  --card:#ffffff;
-  --accent:#f97316;                 /* 橘：主色 */
-  --accent-soft:rgba(249,115,22,.16);
-  --text:#0f172a;                   /* 深色字 */
-  --muted:#64748b;                  /* 次要字 */
-  --border:#e2e8f0;                 /* 淺灰框線 */
+  /* Theme */
+  --card:#020617;
+  --accent:#22c55e;
+  --accent-soft:rgba(34,197,94,.16);
+  --text:#e5e7eb;
+  --muted:#9ca3af;
+  --border:#1f2937;
   --danger:#ef4444;
-  --pos-blue:#2563eb;               /* 你現有 req 藍色維持 */
+  --pos-blue:#2563eb; /* 你可換成公司 POS 用的藍色 */
 
   /* Elder-friendly sizing */
   --fz-title:30px;
@@ -23,15 +21,12 @@
   --fz-status:14px;
   --fz-btn:18px;
 
-  --ctrl-h:40px;
-  --btn-h:50px;
+  --ctrl-h:40px;     /* input/select height */
+  --btn-h:50px;      /* primary button height */
   --radius:14px;
-
-  /* Page background (optional variables) */
-  --page-bg:#f8fafc;               /* 白底 */
-  --page-bg2:#eef2f7;              /* 淡淡層次 */
-  --input-bg:#ffffff;              /* input 底色 */
 }
+
+
 
 *{
   box-sizing:border-box;
