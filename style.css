@@ -63,7 +63,7 @@ input, textarea, select{
   min-height:var(--ui-h);
 
   /* padding:10px 12px; */ /* 固定數字：輸入框內距 */
-
+  padding:0;
   border-radius:var(--radius);
 
   border:1px solid var(--line); /* 固定數字：邊框粗細 */
@@ -78,11 +78,6 @@ input:focus, textarea:focus, select:focus{
   border-color:var(--brand);
 }
 
-input:focus-visible, textarea:focus-visible, select:focus-visible, button:focus-visible{
-  /* outline:2px solid var(--brand); */ /* 固定數字：外框粗細 */
-  /* outline-offset:2px; */            /* 固定數字：外框距離 */
-}
-
 .btn{
   /* margin-top:6px; */ /* 固定數字：按鈕上方留白 */
 
@@ -91,9 +86,8 @@ input:focus-visible, textarea:focus-visible, select:focus-visible, button:focus-
   /* padding:12px 14px; */ /* 固定數字：按鈕內距 */
 
   border:none;
-
-  /* border-radius:999px; */ /* 固定數字：膠囊圓角 */
-
+  border-radius:var(--radius);
+  min-width:var(--ui-h);
   cursor:pointer;
   background:var(--brand);
   color:var(--card);
