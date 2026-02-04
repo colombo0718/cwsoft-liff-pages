@@ -13,27 +13,31 @@
 </head>
 
 <body>  
-<div class="card">
-  <h1>綁定會員</h1>
+
+  
+<section class="card" aria-label="綁定會員">
+  <header>
+    <h1>綁定會員</h1>
+  </header>
 
   <form id="member-form" autocomplete="off">
     <!-- 基本資料 -->
-    <div>
-      <div>👤 基本資料</div>
-      <div class="hint">請填寫會員資料<br /></div>
+    <fieldset>
+      <legend>👤 基本資料</legend>
+      <p class="hint">請填寫會員資料</p>
 
       <label>
-        <div>姓名*</div>
+        <span>姓名*</span>
         <input id="name" type="text" placeholder="例如：趙士豪" />
       </label>
 
       <label>
-        <div>手機*</div>
+        <span>手機*</span>
         <input id="phone" type="tel" placeholder="例如：0912-345-678" />
       </label>
 
       <label>
-        <div>地址</div>
+        <span>地址</span>
 
         <div>
           <select id="addrCity">
@@ -47,57 +51,59 @@
 
         <input id="address" type="hidden" value="" />
       </label>
-    </div>
+    </fieldset>
 
     <!-- 安全驗證 -->
-    <div>
-      <div>🛡️ 安全驗證</div>
-      <div class="hint">請完成安全驗證<br /></div>
+    <fieldset>
+      <legend>🛡️ 安全驗證</legend>
+      <p class="hint">請完成安全驗證</p>
 
-      <!-- CAPTCHA -->
-      <div>圖片</div>
-      <div>
-        <button type="button" class="btn" id="btn-captcha-refresh">⟳</button>
-        <canvas id="captchaCanvas" width="170" height="50"></canvas>
-        <input
-          id="captchaInput"
-          type="text"
-          inputmode="numeric"
-          placeholder="輸入左側圖片數字"
-          maxlength="4"
-        />
-      </div>
+      <section aria-label="圖片驗證">
+        <h3>圖片</h3>
+        <div>
+          <button type="button" class="btn" id="btn-captcha-refresh" aria-label="刷新圖片驗證">⟳</button>
+          <canvas id="captchaCanvas" width="170" height="50"></canvas>
+          <input
+            id="captchaInput"
+            type="text"
+            inputmode="numeric"
+            placeholder="輸入左側圖片數字"
+            maxlength="4"
+          />
+        </div>
+      </section>
 
-      <!-- OTP -->
-      <div>簡訊</div>
-      <div>
-        <button type="button" class="btn" id="btn-otp-send">取得簡訊驗證碼</button>
-        <input
-          id="otpInput"
-          type="text"
-          inputmode="numeric"
-          placeholder="輸入 6 位 OTP"
-          maxlength="6"
-        />
-      </div>
-    </div>
+      <section aria-label="簡訊驗證">
+        <h3>簡訊</h3>
+        <div>
+          <button type="button" class="btn" id="btn-otp-send">取得簡訊驗證碼</button>
+          <input
+            id="otpInput"
+            type="text"
+            inputmode="numeric"
+            placeholder="輸入 6 位 OTP"
+            maxlength="6"
+          />
+        </div>
+      </section>
+    </fieldset>
 
     <!-- 送出 -->
-    <div>
+    <footer>
       <button type="submit" class="btn" id="btn-submit" disabled>
         <span>送出資料</span>
       </button>
 
-      <div id="status"></div>
-    </div>
+      <output id="status" aria-live="polite"></output>
+    </footer>
 
     <!-- Debug -->
-    <div>
-      <div>Debug（工程用）</div>
+    <details>
+      <summary>Debug（工程用）</summary>
       <pre id="debug">[debug] boot...</pre>
-    </div>
+    </details>
   </form>
-</div>
+</section>
 
 
 

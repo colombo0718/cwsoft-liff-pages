@@ -65,6 +65,11 @@ form{
   gap:var(--space);                /* 元件與元件距離（不會疊加） */
 }
 
+.hint{
+  color:var(--muted);
+  font-size:var(--label-size);
+}
+
 /* ===== 互動元件 ===== */
 
 input, textarea, select, .btn{
