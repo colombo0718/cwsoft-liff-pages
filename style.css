@@ -28,6 +28,9 @@
   --ui-h: 50px;   /* 所有互動元件高度：input / select / textarea / button */
   --radius: 14px;     /* 元件圓角半徑 */
 
+  --space: 10px;     /* 統一距離：元件與元件、元件與邊框 */
+  --pad-x: 10px;     /* 元件內容左右留白（不影響高度） */
+
 }
 
 body{
@@ -55,10 +58,12 @@ body{
 
   border-radius:var(--radius);
 
-  /* padding:22px 18px 18px; */ /* 固定數字：卡片內距 */
+  padding:var(--space);
 }
 
 input, textarea, select{
+  padding:0 var(--pad-x);
+  height:var(--ui-h);
   width:100%;
   min-height:var(--ui-h);
 
@@ -99,11 +104,17 @@ input:focus, textarea:focus, select:focus{
   align-items:center;
   justify-content:center;
 
-  /* gap:8px; */ /* 固定數字：按鈕內元素間距 */
+  gap:var(--space); /* 固定數字：按鈕內元素間距 */
+}
+
+form{
+  display:flex;
+  flex-direction:column;
+  gap:var(--space);       /* ✅ 元件與元件距離 = 10px */
 }
 
 .btn:active{
-  /* transform:translateY(1px); */ /* 固定數字：按壓位移 */
+  transform:translateY(1px); /* 固定數字：按壓位移 */
 }
 
 canvas{
