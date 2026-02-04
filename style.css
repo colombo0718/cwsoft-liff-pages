@@ -1,19 +1,19 @@
-/* style.css — Dark card UI + Green accent + Elder-friendly large typography */
+/* style.css — Dark card UI + Green accent (refined + utilities) */
 
 :root{
-  /* Theme */
+  /* Colors */
+  --bg0:#000;
+  --bg1:#020617;
+  --bg2:#1f2937;
   --card:#020617;
-  --accent:#22c55e;
-  --accent-soft:rgba(34,197,94,.16);
   --text:#e5e7eb;
   --muted:#9ca3af;
   --border:#1f2937;
+  --accent:#22c55e;
   --danger:#ef4444;
-  --pos-blue:#2563eb; /* 你可換成公司 POS 用的藍色 */
 
-  /* Elder-friendly sizing */
+  /* Sizing (elder-friendly) */
   --fz-title:20px;
-  --fz-subtitle:14px;
   --fz-hint:14px;
   --fz-label:15px;
   --fz-input:18px;
@@ -21,8 +21,8 @@
   --fz-status:14px;
   --fz-btn:18px;
 
-  --ctrl-h:40px;     /* input/select height */
-  --btn-h:50px;      /* primary button height */
+  --ctrl-h:40px;
+  --btn-h:50px;
   --radius:14px;
 }
 
@@ -39,39 +39,20 @@ body{
   align-items:center;
   justify-content:center;
   padding:18px;
-  color:var(--text);
   font-size:16px;
-  background:radial-gradient(circle at top,#1f2937 0,#020617 55%,#000 100%);
+  color:var(--text);
+  background:radial-gradient(circle at top,var(--bg2) 0,var(--bg1) 55%,var(--bg0) 100%);
 }
 
 /* Card */
 .card{
   width:100%;
   max-width:480px;
-  background:var(--card);
+  padding:22px 18px 18px;
   border:1px solid var(--border);
   border-radius:18px;
-  padding:22px 18px 18px;
+  background:var(--card);
   box-shadow:0 22px 45px rgba(0,0,0,.48);
-}
-
-.card-header{
-  display:flex;
-  align-items:center;
-  gap:10px;
-  margin-bottom:12px;
-}
-
-.dot{
-  width:10px;height:10px;border-radius:999px;
-  background:var(--accent);
-  box-shadow:0 0 12px rgba(34,197,94,.8);
-}
-
-.title-group{
-  display:flex;
-  flex-direction:column;
-  gap:4px;
 }
 
 h1{
@@ -81,27 +62,35 @@ h1{
   letter-spacing:.02em;
 }
 
-.subtitle{
-  font-size:var(--fz-subtitle);
-  color:var(--muted);
-}
-
-/* Hint text */
-.hint{
-  font-size:var(--fz-hint);
-  color:var(--muted);
-  margin-bottom:12px;
-  line-height:1.55;
-}
-
-.hintline{ margin-top:10px; }
-
-/* Form layout */
+/* Layout */
 form{
   display:flex;
   flex-direction:column;
   gap:12px;
   margin-top:10px;
+}
+
+.block{
+  margin-top:14px;
+  padding-top:14px;
+}
+
+.block-title{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  margin-bottom:10px;
+  font-size:16px;
+  font-weight:800;
+  letter-spacing:.02em;
+  color:var(--text);
+}
+
+.hint{
+  margin-bottom:12px;
+  font-size:var(--fz-hint);
+  color:var(--muted);
+  line-height:1.55;
 }
 
 label{
@@ -111,6 +100,8 @@ label{
   font-size:var(--fz-label);
 }
 
+.block label:first-of-type{ margin-top:4px; }
+
 .label-main{
   display:flex;
   align-items:center;
@@ -118,16 +109,14 @@ label{
   font-weight:600;
 }
 
-.required{ color:var(--danger); }
-
-/* Controls: input / textarea / select */
+/* Controls */
 input, textarea, select{
   width:100%;
   min-height:var(--ctrl-h);
   padding:10px 12px;
-  border-radius:12px;
   border:1px solid var(--border);
-  background:#020617;
+  border-radius:12px;
+  background:var(--bg1);
   color:var(--text);
   font-size:var(--fz-input);
   outline:none;
@@ -143,7 +132,6 @@ textarea{
   resize:vertical;
 }
 
-/* Focus states */
 input:focus, textarea:focus, select:focus{
   border-color:var(--accent);
   box-shadow:0 0 0 2px rgba(34,197,94,.22);
@@ -154,13 +142,12 @@ input:focus-visible, textarea:focus-visible, select:focus-visible, button:focus-
   outline-offset:2px;
 }
 
-/* Disabled */
 input[disabled], textarea[disabled], select[disabled], button[disabled]{
   opacity:.55;
   cursor:not-allowed;
 }
 
-/* Select styling: keep native behavior but consistent look */
+/* Select arrow */
 select{
   appearance:none;
   -webkit-appearance:none;
@@ -176,7 +163,6 @@ select{
   background-repeat:no-repeat;
 }
 
-/* Option colors (best-effort across browsers) */
 select option{
   background:#0b1220;
   color:var(--text);
@@ -187,17 +173,20 @@ select option{
   margin-top:6px;
   min-height:var(--btn-h);
   padding:12px 14px;
-  border:none;
-  border-radius:999px;  
+  border:0;
+  border-radius:999px;
   cursor:pointer;
-  background:linear-gradient(135deg,#22c55e,#4ade80);
-  color:#022c22;
-  font-size:var(--fz-btn);
-  font-weight:700;
+
   display:flex;
   align-items:center;
   justify-content:center;
   gap:8px;
+
+  font-size:var(--fz-btn);
+  font-weight:700;
+
+  color:#022c22;
+  background:linear-gradient(135deg,#22c55e,#4ade80);
   box-shadow:0 16px 30px rgba(34,197,94,.45);
   transition:transform .12s ease, box-shadow .12s ease, filter .12s ease;
 }
@@ -215,9 +204,7 @@ select option{
   font-size:16px;
 }
 
-.btn .icon{ font-size:18px; }
-
-/* Sections / dividers */
+/* Sections + copy */
 .section{
   margin-top:14px;
   padding-top:14px;
@@ -229,7 +216,6 @@ select option{
   line-height:1.55;
 }
 
-/* Status */
 .status{
   margin-top:8px;
   min-height:18px;
@@ -255,7 +241,7 @@ canvas{
   background:rgba(0,0,0,.15);
 }
 
-/* Row utilities */
+/* ===== Utilities ===== */
 .row{
   display:flex;
   gap:10px;
@@ -263,14 +249,22 @@ canvas{
   flex-wrap:wrap;
 }
 
-.inline-status{
-  font-size:var(--fz-status);
-  color:var(--muted);
-  min-width:96px;
-}
+.grow{ flex:1; }
+.minw-100{ min-width:100px; }
+.minw-180{ min-width:180px; }
 
-.inline-status.ok{ color:#bbf7d0; }
-.inline-status.bad{ color:#fecaca; }
+.mt-8{ margin-top:8px; }
+.mt-10{ margin-top:10px; }
+
+.debug-box{
+  margin:8px 0 0;
+  padding:10px;
+  border-radius:12px;
+  border:1px solid rgba(255,255,255,0.12);
+  background:rgba(0,0,0,0.18);
+  max-height:180px;
+  overflow:auto;
+}
 
 /* Responsive */
 @media (max-width:360px){
@@ -281,49 +275,8 @@ canvas{
     --ctrl-h:44px;
     --btn-h:50px;
   }
-
   .card{
     padding:20px 14px 16px;
     max-width:440px;
   }
 }
-
-.label-main.req{
-  color: var(--pos-blue);
-}
-
-.label-main.req .required{
-  color: var(--pos-blue);
-}
-
-/* ===== 區塊標題：基本資料 / 安全驗證 ===== */
-.block{
-  margin-top:14px;
-  padding-top:14px;
-  /* border-top:1px solid rgba(255,255,255,.08); */
-}
-
-.block-title{
-  display:flex;
-  align-items:center;
-  gap:8px;
-  font-size:16px;
-  font-weight:800;
-  color:var(--text);
-  margin-bottom:10px;
-  letter-spacing:.02em;
-}
-
-/* 讓 block 裡第一個 label 不會貼太近 */
-.block label:first-of-type{ margin-top:4px; }
-
-/* 送出區塊再稍微留白，視覺更像結尾 */
-.submit-area{ padding-bottom:6px; }
-
-/* Debug 預設不顯示（需要時再打開） */
-.debug-area{ display:none; }
-
-/* 若你想在開發時顯示 debug：body 加上 class="debug" */
-body.debug .debug-area{ display:block; }
-
-#btn-captcha-verify{ display:none !important; }

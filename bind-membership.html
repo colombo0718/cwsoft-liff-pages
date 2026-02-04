@@ -13,119 +13,93 @@
 </head>
 
 <body>  
-  <div class="card">  
-        <h1>綁定會員</h1>
-    <form id="member-form" autocomplete="off">
-      <!-- 基本資料 -->
-      <div class="block">
-        <div class="block-title">👤 基本資料</div>
-        <div class="hint">
-          請填寫會員資料<br />
+<div class="card">
+  <h1>綁定會員</h1>
+
+  <form id="member-form" autocomplete="off">
+    <!-- 基本資料 -->
+    <div class="block">
+      <div class="block-title">👤 基本資料</div>
+      <div class="hint">請填寫會員資料<br /></div>
+
+      <label>
+        <div class="label-main">姓名</div>
+        <input id="name" type="text" placeholder="例如：趙士豪" />
+      </label>
+
+      <label>
+        <div class="label-main">手機</div>
+        <input id="phone" type="tel" placeholder="例如：0912-345-678" />
+      </label>
+
+      <label>
+        <div class="label-main">地址</div>
+
+        <div class="row row-top8">
+          <select id="addrCity" class="grow minw-100">
+            <option value="">選擇縣市</option>
+          </select>
+
+          <select id="addrDistrict" class="grow minw-100" disabled>
+            <option value="">先選縣市</option>
+          </select>
         </div>
-        <label>
-          <div class="label-main">姓名</div>
-          <input id="name" type="text" placeholder="例如：趙士豪" />
-        </label>
 
-        <label>
-          <div class="label-main">手機</div>
-          <input id="phone" type="tel" placeholder="例如：0912-345-678" />
-        </label>
+        <input id="address" type="hidden" value="" />
+      </label>
+    </div>
 
-        <!-- <label>
-          <div class="label-main">通訊地址</div>
-          <input id="address" type="text" placeholder="例如：台南市東區成功路 123 號" />
-        </label> -->
-        <label>
-          <div class="label-main">地址</div>
+    <!-- 安全驗證 -->
+    <div class="block">
+      <div class="block-title">🛡️ 安全驗證</div>
+      <div class="hint">請完成安全驗證<br /></div>
 
-          <div style="margin-top:8px; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
-            <select id="addrCity" style="flex:1; min-width:100px;">
-              <option value="">選擇縣市</option>
-            </select>
-
-            <select id="addrDistrict" style="flex:1; min-width:100px;" disabled>
-              <option value="">先選縣市</option>
-            </select>
-          </div>
-        
-          <!-- 先求有：把選到的值串成一段（之後要送後端/回寫 DB 再用） -->
-          <input id="address" type="hidden" value="" />
-        </label>
+      <!-- CAPTCHA -->
+      <div class="label-main">圖片</div>
+      <div class="captchaBox captchaBox-top10">
+        <button type="button" class="btn small" id="btn-captcha-refresh">⟳</button>
+        <canvas id="captchaCanvas" width="170" height="50"></canvas>
+        <input
+          id="captchaInput"
+          class="grow minw-180"
+          type="text"
+          inputmode="numeric"
+          placeholder="輸入左側圖片數字"
+          maxlength="4"
+        />
       </div>
 
-
-      <div class="block"> 
-        <!-- CAPTCHA -->
-        <div class="block-title">🛡️ 安全驗證</div>
-          <div class="hint">
-            請完成安全驗證<br />
-          </div>
-          <div class="label-main">圖片</div>
-          <div class="captchaBox" style="margin-top:10px;">
-            <button type="button" class="btn small" id="btn-captcha-refresh">⟳</button>
-            <canvas id="captchaCanvas" width="170" height="50"></canvas>
-            <input id="captchaInput"
-                  type="text"
-                  inputmode="numeric"
-                  placeholder="輸入左側圖片數字"
-                  maxlength="4"
-                  style="flex:1; min-width:180px;" />
-          </div>
-
-          <!-- 這行用 inline flex，避免依賴 .row -->
-          <div style="margin-top:10px; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
-
-            <!-- <button type="button" class="btn small" id="btn-captcha-verify">驗證圖片碼</button> -->
-            <!-- <span id="captchaVerifyStatus"
-                  style="font-size:12px; color:var(--muted); min-width:90px;">尚未驗證</span> -->
-          </div>
-        
-
-          <!-- OTP -->
-        
-          <!-- <div class="mini">📲 OTP 簡訊驗證</div>
-          <div class="mini">
-            點「取得 OTP」會呼叫後端 /otp 發送簡訊（目前先求有：verify 先用格式判斷）。
-          </div> -->
-          <div class="label-main">簡訊</div>
-          <div style="margin-top:10px; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
-            <button type="button" class="btn small" id="btn-otp-send">取得簡訊驗證碼</button>
-            <input id="otpInput"
-                  type="text"
-                  inputmode="numeric"
-                  placeholder="輸入 6 位 OTP"
-                  maxlength="6"
-                  style="flex:1; min-width:180px;" />
-            <!-- <span id="otpSendStatus" style="font-size:12px; color:var(--muted); min-width:120px;">尚未發送</span> -->
-          </div>
-
-          <!-- <div style="margin-top:10px; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
-
-            <button type="button" class="btn small" id="btn-otp-verify">驗證 OTP</button>
-            <span id="otpVerifyStatus" style="font-size:12px; color:var(--muted); min-width:90px;">尚未驗證</span>
-          </div> -->
+      <!-- OTP -->
+      <div class="label-main">簡訊</div>
+      <div class="row row-top10">
+        <button type="button" class="btn small" id="btn-otp-send">取得簡訊驗證碼</button>
+        <input
+          id="otpInput"
+          class="grow minw-180"
+          type="text"
+          inputmode="numeric"
+          placeholder="輸入 6 位 OTP"
+          maxlength="6"
+        />
       </div>
+    </div>
 
-      <!-- 送出 -->
-      <div class="section">
-        <button type="submit" class="btn" id="btn-submit" disabled>
-          <span>送出資料</span>
-        </button>
+    <!-- 送出 -->
+    <div class="section">
+      <button type="submit" class="btn" id="btn-submit" disabled>
+        <span>送出資料</span>
+      </button>
 
-        <!-- 這裡只放「頁面級」訊息：LIFF/綁定鎖定/後端錯誤，不放各按鈕結果 -->
-        <div class="status" id="status"></div>
-      </div>
+      <div class="status" id="status"></div>
+    </div>
 
-      <!-- Debug terminal：工程用 -->
-      <div class="section">
-        <div class="mini">Debug（工程用）</div>
-        <pre id="debug"
-             style="margin:8px 0 0; padding:10px; border-radius:12px; border:1px solid rgba(255,255,255,0.12); background:rgba(0,0,0,0.18); max-height:180px; overflow:auto;"
-        >[debug] boot...</pre>
-      </div>
-    </form>
-  </div>
+    <!-- Debug -->
+    <div class="section">
+      <div class="mini">Debug（工程用）</div>
+      <pre id="debug" class="debug-box">[debug] boot...</pre>
+    </div>
+  </form>
+</div>
   <script src="./core.js?ts=<?=Date.now()?"></script>
   <script src="./captcha.js?ts=<?=Date.now()?"></script>
   <script>
