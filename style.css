@@ -36,37 +36,44 @@ body{
   display:flex;
   align-items:center;
   justify-content:center;
-  padding:18px;
+
+  /* padding:18px; */          /* 影響：頁面四周留白（避免卡片貼邊） */
+
   background:var(--bg);
   color:var(--text);
-  font-size:var(--body-size);
+
+  /* font-size:var(--body-size); */ /* 影響：整頁預設文字大小（含一般文字） */
 }
 
 .card{
   width:100%;
-  max-width:480px;
-  background:var(--card);
-  border:1px solid var(--line);
-  border-radius:var(--radius);
-  padding:22px 18px 18px;
-}
 
-.dot{
-  width:10px;
-  height:10px;
-  border-radius:999px;
-  background:var(--brand);
+  /* max-width:480px; */       /* 影響：卡片最大寬度（鎖成手機視覺） */
+
+  background:var(--card);
+
+  /* border:1px solid var(--line); */ /* 影響：卡片外框線粗細 */
+
+  border-radius:var(--radius);
+
+  /* padding:22px 18px 18px; */ /* 影響：卡片內距（上 左右 下） */
 }
 
 input, textarea, select{
   width:100%;
   min-height:var(--ui-h);
-  padding:10px 12px;
+
+  /* padding:10px 12px; */     /* 影響：輸入框內距（上下 左右） */
+
   border-radius:var(--radius);
-  border:1px solid var(--line);
+
+  /* border:1px solid var(--line); */ /* 影響：輸入框線粗細 */
+
   background:var(--card);
   color:var(--text);
-  font-size:var(--body-size);
+
+  /* font-size:var(--body-size); */   /* 影響：輸入框文字大小 */
+
   outline:none;
 }
 
@@ -75,44 +82,62 @@ input:focus, textarea:focus, select:focus{
 }
 
 input:focus-visible, textarea:focus-visible, select:focus-visible, button:focus-visible{
-  outline:2px solid var(--brand);
-  outline-offset:2px;
+  /* outline:2px solid var(--brand); */ /* 影響：鍵盤 focus 外框粗細 */
+
+  /* outline-offset:2px; */            /* 影響：focus 外框與元件間距 */
 }
 
 .btn{
-  margin-top:6px;
+  /* margin-top:6px; */          /* 影響：按鈕上方留白 */
+
   min-height:var(--ui-h);
-  padding:12px 14px;
+
+  /* padding:12px 14px; */       /* 影響：按鈕內距（上下 左右） */
+
   border:none;
-  border-radius:999px;
+
+  /* border-radius:999px; */     /* 影響：膠囊按鈕（全圓角） */
+
   cursor:pointer;
   background:var(--brand);
   color:var(--card);
-  font-size:var(--body-size);
-  font-weight:700;
+
+  /* font-size:var(--body-size); */ /* 影響：按鈕文字大小 */
+
+  /* font-weight:700; */          /* 影響：按鈕字重 */
+
   display:flex;
   align-items:center;
   justify-content:center;
-  gap:8px;
+
+  /* gap:8px; */                  /* 影響：按鈕內 icon 與文字間距 */
 }
 
 .btn:active{
-  transform:translateY(1px);
+  /* transform:translateY(1px); */  /* 影響：按下去的位移感（按壓效果） */
 }
 
 canvas{
   border-radius:var(--radius);
-  border:1px solid var(--line);
+
+  /* border:1px solid var(--line); */ /* 影響：canvas 外框線粗細 */
+
   background:var(--bg);
 }
 
 .debug-box{
-  margin:8px 0 0;
-  padding:10px;
+  /* margin:8px 0 0; */           /* 影響：debug 區塊上方留白 */
+
+  /* padding:10px; */             /* 影響：debug 內距 */
+
   border-radius:var(--radius);
-  border:1px solid var(--line);
+
+  /* border:1px solid var(--line); */ /* 影響：debug 外框線粗細 */
+
   background:var(--bg);
-  max-height:180px;
+
+  /* max-height:180px; */         /* 影響：debug 最大高度（超過就捲動） */
+
   overflow:auto;
 }
 
