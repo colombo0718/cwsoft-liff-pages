@@ -141,3 +141,11 @@ canvas{
   max-height:180px;
   overflow:auto;
 }
+
+.label-main.req{
+  color: var(--pos-blue);
+}
+
+.label-main.req .required{
+  color: var(--pos-blue);
+}
