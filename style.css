@@ -87,9 +87,8 @@ input, textarea, select{
 }
 
 input{
-  flex:1 1 0%;        /* ✅ 會撐開 */
-  min-width:0;      /* ✅ 最小寬度變小，不容易換行 */
-  width: auto;      /* 確保由 flex 控制寬度 */
+  flex:1 1 auto;        /* ✅ 會撐開 */
+  min-width:50px;      /* ✅ 最小寬度變小，不容易換行 */
 }
 
 /* focus 只保留一層（避免難看的雙框） */
@@ -107,8 +106,7 @@ div{
   display:flex;
   align-items:center;
   gap:var(--space);
-  flex-wrap:nowrap;           /* 小螢幕不夠就自動換行，但同一排邏輯不變 */
-  width: 100%;       /* 確保容器撐滿父層 */
+  flex-wrap:wrap;           /* 小螢幕不夠就自動換行，但同一排邏輯不變 */
 }
 
 
