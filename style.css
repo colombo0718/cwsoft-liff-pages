@@ -72,7 +72,7 @@ form{
 
 /* ===== 互動元件 ===== */
 
-input, textarea, select, .btn{
+input, textarea, select, button{
   height:var(--ui-h);
   border-radius:var(--radius);
   font-size:var(--body-size);
@@ -97,9 +97,17 @@ input[disabled], textarea[disabled], select[disabled], button[disabled]{
   cursor:not-allowed;
 }
 
+div{
+  display:flex;
+  align-items:center;
+  gap:var(--space);
+  flex-wrap:wrap;           /* 小螢幕不夠就自動換行，但同一排邏輯不變 */
+}
+
+
 /* ===== 按鈕 ===== */
 
-.btn{
+button{
   min-width:var(--ui-h);           /* 最小寬度 = 統一高度 */
   border:none;
   background:var(--brand);
@@ -112,7 +120,7 @@ input[disabled], textarea[disabled], select[disabled], button[disabled]{
   gap:var(--space);
 }
 
-.btn:active{
+button:active{
   transform:translateY(1px);       /* 按壓回饋 */
 }
 
