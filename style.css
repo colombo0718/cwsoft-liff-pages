@@ -85,7 +85,10 @@ input, textarea, select{
   padding:0 var(--pad-x);          /* 只左右，不影響高度 */
   outline:none;
 }
-
+input{
+  flex:1 1 auto;        /* ✅ 會撐開 */
+  min-width:120px;      /* ✅ 最小寬度變小，不容易換行 */
+}
 /* focus 只保留一層（避免難看的雙框） */
 input:focus, textarea:focus, select:focus{
   border-color:var(--brand);
