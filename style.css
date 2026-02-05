@@ -122,6 +122,8 @@ canvas{
   border-radius:var(--radius);
   border:1px solid var(--line);
   background:var(--bg);
+  display:block;
+  height:var(--ui-h);
 }
 
 .debug-box{
