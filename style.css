@@ -89,6 +89,7 @@ input, textarea, select{
 input{
   flex:1 1 0%;        /* ✅ 會撐開 */
   min-width:0;      /* ✅ 最小寬度變小，不容易換行 */
+  width: auto;      /* 確保由 flex 控制寬度 */
 }
 
 /* focus 只保留一層（避免難看的雙框） */
