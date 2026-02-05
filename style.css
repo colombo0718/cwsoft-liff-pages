@@ -106,7 +106,7 @@ div{
   display:flex;
   align-items:center;
   gap:var(--space);
-  flex-wrap:wrap;           /* 小螢幕不夠就自動換行，但同一排邏輯不變 */
+  flex-wrap:nowrap;           /* 小螢幕不夠就自動換行，但同一排邏輯不變 */
 }
 
 
@@ -139,6 +139,7 @@ canvas{
   background:var(--bg);
   display:block;
   height:var(--ui-h);
+  flex: 0 0 auto; /* 確保畫布維持固定寬度，不會伸縮 */
 }
 
 .debug-box{
