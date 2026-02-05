@@ -106,7 +106,7 @@ div{
   display:flex;
   align-items:center;
   gap:var(--space);
-  flex-wrap:wrap;           /* 小螢幕不夠就自動換行，但同一排邏輯不變 */
+  flex-wrap:nowrap;           /* 小螢幕不夠就自動換行，但同一排邏輯不變 */
 }
 
 
