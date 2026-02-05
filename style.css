@@ -86,7 +86,7 @@ input, textarea, select{
   outline:none;
 }
 
-input{
+input, select{
   flex:1 1 auto;        /* ✅ 會撐開 */
   width:50px;      /* ✅ 最小寬度變小，不容易換行 */
 }
