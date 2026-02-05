@@ -15,95 +15,95 @@
 <body>  
 
 
-<section class="card" aria-label="綁定會員">
-  <header>
-    <h2>綁定會員</h2>
-  </header>
+  <section class="card" aria-label="綁定會員">
+    <header>
+      <h2>綁定會員</h2>
+    </header>
 
-  <form id="member-form" autocomplete="off">
-    <!-- 基本資料 -->
-    <fieldset>
-      <legend>👤 基本資料</legend>
-      <p class="hint">請填寫會員資料</p>
+    <form id="member-form" autocomplete="off">
+      <!-- 基本資料 -->
+      <fieldset>
+        <legend>👤 基本資料</legend>
+        <p class="hint">請填寫會員資料</p>
 
-      <label>
-        <h4>姓名*</h4>
-        <input id="name" type="text" placeholder="例如：趙士豪" />
-      </label>
+        <label>
+          <h4 class="require">姓名*</h4>
+          <input id="name" type="text" placeholder="例如：趙士豪" />
+        </label>
 
-      <label>
-        <h4>手機*</h4>
-        <input id="phone" type="tel" placeholder="例如：0912-345-678" />
-      </label>
+        <label>
+          <h4 class="require">手機*</h4>
+          <input id="phone" type="tel" placeholder="例如：0912-345-678" />
+        </label>
 
-      <label>
-        <h4>地址</h4>
+        <label>
+          <h4>地址</h4>
 
-        <div>
-          <select id="addrCity">
-            <option value="">選擇縣市</option>
-          </select>
+          <div>
+            <select id="addrCity">
+              <option value="">選擇縣市</option>
+            </select>
 
-          <select id="addrDistrict" disabled>
-            <option value="">選擇區域</option>
-          </select>
-        </div>
+            <select id="addrDistrict" disabled>
+              <option value="">選擇區域</option>
+            </select>
+          </div>
 
-        <input id="address" type="hidden" value="" />
-      </label>
-    </fieldset>
+          <input id="address" type="hidden" value="" />
+        </label>
+      </fieldset>
 
-    <!-- 安全驗證 -->
-    <fieldset>
-      <legend>🛡️ 安全驗證</legend>
-      <p class="hint">請完成安全驗證</p>
+      <!-- 安全驗證 -->
+      <fieldset>
+        <legend>🛡️ 安全驗證</legend>
+        <p class="hint">請完成安全驗證</p>
 
-      <section aria-label="圖片驗證">
-        <h4>圖片</h4>
-        <div>
-          <button type="button" class="btn" id="btn-captcha-refresh" aria-label="刷新圖片驗證">⟳</button>
-          <canvas id="captchaCanvas" width="170" height="50"></canvas>
-          <input
-            id="captchaInput"
-            type="text"
-            inputmode="numeric"
-            placeholder="輸入左側圖片數字"
-            maxlength="4"
-          />
-        </div>
-      </section>
+        <section aria-label="圖片驗證">
+          <h4>圖片</h4>
+          <div>
+            <button type="button" class="btn" id="btn-captcha-refresh" aria-label="刷新圖片驗證">⟳</button>
+            <canvas id="captchaCanvas" width="170" height="50"></canvas>
+            <input
+              id="captchaInput"
+              type="text"
+              inputmode="numeric"
+              placeholder="輸入左側圖片數字"
+              maxlength="4"
+            />
+          </div>
+        </section>
 
-      <section aria-label="簡訊驗證">
-        <h4>簡訊</h4>
-        <div>
-          <button type="button" class="btn" id="btn-otp-send">取得簡訊驗證碼</button>
-          <input
-            id="otpInput"
-            type="text"
-            inputmode="numeric"
-            placeholder="輸入 6 位 OTP"
-            maxlength="6"
-          />
-        </div>
-      </section>
-    </fieldset>
+        <section aria-label="簡訊驗證">
+          <h4>簡訊</h4>
+          <div>
+            <button type="button" class="btn" id="btn-otp-send">取得簡訊驗證碼</button>
+            <input
+              id="otpInput"
+              type="text"
+              inputmode="numeric"
+              placeholder="輸入 6 位 OTP"
+              maxlength="6"
+            />
+          </div>
+        </section>
+      </fieldset>
 
-    <!-- 送出 -->
-    <footer>
-      <button type="submit" class="btn" id="btn-submit" disabled>
-        <span>送出資料</span>
-      </button>
+      <!-- 送出 -->
+      <footer>
+        <button type="submit" class="btn" id="btn-submit" disabled>
+          <span>送出資料</span>
+        </button>
 
-      <output id="status" aria-live="polite"></output>
-    </footer>
+        <output id="status" aria-live="polite"></output>
+      </footer>
 
-    <!-- Debug -->
-    <details>
-      <summary>Debug（工程用）</summary>
-      <pre id="debug">[debug] boot...</pre>
-    </details>
-  </form>
-</section>
+      <!-- Debug -->
+      <details>
+        <summary>Debug（工程用）</summary>
+        <pre id="debug">[debug] boot...</pre>
+      </details>
+    </form>
+  </section>
 
 
 

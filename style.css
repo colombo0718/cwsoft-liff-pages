@@ -133,6 +133,6 @@ canvas{
 
 /* ===== 必填提示色 ===== */
 
-.label-main.required{
+.required{
   color:var(--required);
 }
