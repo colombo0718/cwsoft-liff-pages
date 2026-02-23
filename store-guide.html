@@ -12,47 +12,61 @@
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 
   <style>
-    /* 小補充：列表用的樣式（仍沿用主色、圓角、間距變數） */
-    .list{
-      display:flex;
-      flex-direction:column;
-      gap:var(--space);
-    }
-    .item{
-      border:1px solid var(--line);
-      border-radius:var(--radius);
-      padding:var(--space);
-      background:var(--bg);
-    }
-    .item h3{
-      margin:0 0 6px 0;
-      font-size:18px;
-    }
-    .addr{
-      color:var(--muted);
-      font-size:15px;
-      line-height:1.4;
-      white-space:pre-wrap;
-    }
-    .row{
-      display:flex;
-      gap:var(--space);
-      margin-top:10px;
-    }
-    .row button{
-      flex:1 1 auto;
-    }
-    .topline{
-      display:flex;
-      align-items:baseline;
-      justify-content:space-between;
-      gap:var(--space);
-      margin-bottom:10px;
-    }
-    .badge{
-      font-size:13px;
-      color:var(--muted);
-    }
+  .list{
+    display:flex;
+    flex-direction:column;
+    gap:var(--space);
+  }
+  .item{
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:var(--space);
+    background:var(--bg);
+
+    /* ✅ 關鍵：不管外層怎麼置中，這個 item 內都靠左 */
+    text-align:left;
+  }
+
+  /* ✅ row 改成：左按鈕 + 右資訊 */
+  .row{
+    display:flex;
+    align-items:flex-start;
+    gap:var(--space);
+    margin-top:0;            /* ✅ 按鈕要在最上，不要往下推 */
+  }
+  .row button{
+    flex:0 0 auto;           /* ✅ 不要撐滿 */
+    white-space:nowrap;
+  }
+
+  /* ✅ 讓內容區吃滿剩餘寬度 */
+  .row .content{
+    flex:1 1 auto;
+    min-width:0;
+  }
+
+  .item h3{
+    margin:0 0 6px 0;
+    font-size:18px;
+  }
+  .addr{
+    color:var(--muted);
+    font-size:15px;
+    line-height:1.4;
+    white-space:pre-wrap;
+  }
+
+  .topline{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    gap:var(--space);
+    margin-bottom:10px;
+  }
+  .badge{
+    font-size:13px;
+    color:var(--muted);
+  }
   </style>
 </head>
 
