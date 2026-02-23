@@ -127,7 +127,7 @@
 
       const addr = document.createElement("div");
       addr.className = "addr";
-      addr.textContent = it.store_address || "(未提供地址)";
+      addr.textContent = it.address || "(未提供地址)";
 
       const row = document.createElement("div");
       row.className = "row";
@@ -136,7 +136,7 @@
       btnMap.type = "button";
       btnMap.textContent = "在 Google 地圖開啟";
       btnMap.addEventListener("click", () => {
-        const url = mapsUrlByAddress(it.store_address || it.store_name || "");
+        const url = mapsUrlByAddress(it.address || it.store_name || "");
         dbg(`open map: ${url}`);
         window.open(url, "_blank");
       });
