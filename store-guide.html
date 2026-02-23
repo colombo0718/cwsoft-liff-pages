@@ -12,60 +12,21 @@
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 
   <style>
-  .list{
-    display:flex;
-    flex-direction:column;
-    gap:var(--space);
-  }
-  .item{
-    border:1px solid var(--line);
-    border-radius:var(--radius);
-    padding:var(--space);
-    background:var(--bg);
+  /* 只處理門市清單排版 */
 
-    /* ✅ 關鍵：不管外層怎麼置中，這個 item 內都靠左 */
+  .item{
+    display:block;        /* 把 style.css 的 div:flex 拉回正常直排 */
+    text-align:left;      /* 強制靠左 */
+  }
+
+  .item h3,
+  .item .addr{
+    display:block;
     text-align:left;
   }
 
-  /* ✅ row 改成：左按鈕 + 右資訊 */
   .row{
-    display:flex;
-    align-items:flex-start;
-    gap:var(--space);
-    margin-top:0;            /* ✅ 按鈕要在最上，不要往下推 */
-  }
-  .row button{
-    flex:0 0 auto;           /* ✅ 不要撐滿 */
-    white-space:nowrap;
-  }
-
-  /* ✅ 讓內容區吃滿剩餘寬度 */
-  .row .content{
-    flex:1 1 auto;
-    min-width:0;
-  }
-
-  .item h3{
-    margin:0 0 6px 0;
-    font-size:18px;
-  }
-  .addr{
-    color:var(--muted);
-    font-size:15px;
-    line-height:1.4;
-    white-space:pre-wrap;
-  }
-
-  .topline{
-    display:flex;
-    align-items:baseline;
-    justify-content:space-between;
-    gap:var(--space);
-    margin-bottom:10px;
-  }
-  .badge{
-    font-size:13px;
-    color:var(--muted);
+    display:flex;         /* 只讓按鈕那一排維持橫向 */
   }
   </style>
 </head>
@@ -132,42 +93,34 @@ function render(items){
   }
   hintEl.textContent = "請選擇門市：";
 
-  for (const it of items){
-    const div = document.createElement("div");
-    div.className = "item item-left";   // ✅ 多加一個 class 方便套新排版
+for (const it of items){
+  const itemEl = document.createElement("article");
+  itemEl.className = "item item-left";
 
-    // ✅ 左側按鈕：🚗前往
-    const btnGo = document.createElement("button");
-    btnGo.type = "button";
-    btnGo.className = "btn-go";
-    btnGo.textContent = "🚗前往";
-    btnGo.addEventListener("click", () => {
-      const url = mapsUrlByAddress(it.address || it.store_name || "");
-      dbg(`open map: ${url}`);
-      window.open(url, "_blank");
-    });
+  const btnGo = document.createElement("button");
+  btnGo.type = "button";
+  btnGo.className = "btn-go";
+  btnGo.textContent = "🚗前往";
+  btnGo.addEventListener("click", () => {
+    const url = mapsUrlByAddress(it.address || it.store_name || "");
+    dbg(`open map: ${url}`);
+    window.open(url, "_blank");
+  });
 
-    // ✅ 右側資訊：店名 + 地址（靠左）
-    const info = document.createElement("div");
-    info.className = "info";
+  const title = document.createElement("h3");
+  title.className = "store-name";
+  title.textContent = it.store_name || "(未命名門市)";
 
-    const name = document.createElement("div");
-    name.className = "store-name";
-    name.textContent = it.store_name || "(未命名門市)";
+  const addr = document.createElement("p");
+  addr.className = "addr";
+  addr.textContent = it.address || "(未提供地址)";
 
-    const addr = document.createElement("div");
-    addr.className = "addr";
-    addr.textContent = it.address || "(未提供地址)";
+  itemEl.appendChild(btnGo);
+  itemEl.appendChild(title);
+  itemEl.appendChild(addr);
 
-    info.appendChild(name);
-    info.appendChild(addr);
-
-    // 組合：按鈕在最左，資料在右但靠左對齊
-    div.appendChild(btnGo);
-    div.appendChild(info);
-
-    listEl.appendChild(div);
-  }
+  listEl.appendChild(itemEl);
+}
 }
 
   async function fetchStores(dbName){
