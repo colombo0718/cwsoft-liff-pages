@@ -12,22 +12,10 @@
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 
   <style>
-  /* 只處理門市清單排版 */
-
-  .item{
-    display:block;        /* 把 style.css 的 div:flex 拉回正常直排 */
-    text-align:left;      /* 強制靠左 */
-  }
-
-  .item h3,
-  .item .addr{
-    display:block;
-    text-align:left;
-  }
-
-  .row{
-    display:flex;         /* 只讓按鈕那一排維持橫向 */
-  }
+  .list{display:flex; flex-direction:column; gap:var(--space);}
+  .item-left{display:grid; grid-template-columns:auto 1fr; column-gap:var(--space); text-align:left;}
+  .item-left .btn-go{grid-row:1 / span 2;}
+  .item-left .store-name,.item-left .addr{margin:0; text-align:left;}
   </style>
 </head>
 
