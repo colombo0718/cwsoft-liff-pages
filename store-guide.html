@@ -152,7 +152,7 @@
   }
 
   async function fetchStores(dbName){
-    const url = new URL(`${API_BIND}/stores`);
+    const url = new URL(`${API_BIND}/branches`);
     url.searchParams.set("name", dbName);
 
     dbg(`fetch: ${url.toString()}`);
