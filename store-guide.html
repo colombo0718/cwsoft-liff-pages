@@ -110,46 +110,51 @@
     return `https://www.google.com/maps/search/?api=1&query=${q}`;
   }
 
-  function render(items){
-    listEl.innerHTML = "";
-    if (!items.length){
-      hintEl.textContent = "查無可用門市（可能都已收店 / 線上付款停用）。";
-      return;
-    }
-    hintEl.textContent = "請選擇門市：";
-
-    for (const it of items){
-      const div = document.createElement("div");
-      div.className = "item";
-
-      const name = document.createElement("h3");
-      name.textContent = it.store_name || "(未命名門市)";
-
-      const addr = document.createElement("div");
-      addr.className = "addr";
-      addr.textContent = it.address || "(未提供地址)";
-
-      const row = document.createElement("div");
-      row.className = "row";
-
-      const btnMap = document.createElement("button");
-      btnMap.type = "button";
-      btnMap.textContent = "在 Google 地圖開啟";
-      btnMap.addEventListener("click", () => {
-        const url = mapsUrlByAddress(it.address || it.store_name || "");
-        dbg(`open map: ${url}`);
-        window.open(url, "_blank");
-      });
-
-      row.appendChild(btnMap);
-
-      div.appendChild(name);
-      div.appendChild(addr);
-      div.appendChild(row);
-
-      listEl.appendChild(div);
-    }
+function render(items){
+  listEl.innerHTML = "";
+  if (!items.length){
+    hintEl.textContent = "查無可用門市（可能都已收店 / 線上付款停用）。";
+    return;
   }
+  hintEl.textContent = "請選擇門市：";
+
+  for (const it of items){
+    const div = document.createElement("div");
+    div.className = "item item-left";   // ✅ 多加一個 class 方便套新排版
+
+    // ✅ 左側按鈕：🚗前往
+    const btnGo = document.createElement("button");
+    btnGo.type = "button";
+    btnGo.className = "btn-go";
+    btnGo.textContent = "🚗前往";
+    btnGo.addEventListener("click", () => {
+      const url = mapsUrlByAddress(it.address || it.store_name || "");
+      dbg(`open map: ${url}`);
+      window.open(url, "_blank");
+    });
+
+    // ✅ 右側資訊：店名 + 地址（靠左）
+    const info = document.createElement("div");
+    info.className = "info";
+
+    const name = document.createElement("div");
+    name.className = "store-name";
+    name.textContent = it.store_name || "(未命名門市)";
+
+    const addr = document.createElement("div");
+    addr.className = "addr";
+    addr.textContent = it.address || "(未提供地址)";
+
+    info.appendChild(name);
+    info.appendChild(addr);
+
+    // 組合：按鈕在最左，資料在右但靠左對齊
+    div.appendChild(btnGo);
+    div.appendChild(info);
+
+    listEl.appendChild(div);
+  }
+}
 
   async function fetchStores(dbName){
     const url = new URL(`${API_BIND}/branches`);
