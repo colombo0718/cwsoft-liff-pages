@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>門市導覽</title>
+
+  <!-- 沿用同一套風格 -->
+  <link rel="stylesheet" href="./style.css" />
+
+  <!-- LIFF SDK -->
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+
+  <style>
+    /* 小補充：列表用的樣式（仍沿用主色、圓角、間距變數） */
+    .list{
+      display:flex;
+      flex-direction:column;
+      gap:var(--space);
+    }
+    .item{
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      padding:var(--space);
+      background:var(--bg);
+    }
+    .item h3{
+      margin:0 0 6px 0;
+      font-size:18px;
+    }
+    .addr{
+      color:var(--muted);
+      font-size:15px;
+      line-height:1.4;
+      white-space:pre-wrap;
+    }
+    .row{
+      display:flex;
+      gap:var(--space);
+      margin-top:10px;
+    }
+    .row button{
+      flex:1 1 auto;
+    }
+    .topline{
+      display:flex;
+      align-items:baseline;
+      justify-content:space-between;
+      gap:var(--space);
+      margin-bottom:10px;
+    }
+    .badge{
+      font-size:13px;
+      color:var(--muted);
+    }
+  </style>
+</head>
+
+<body>
+  <section class="card">
+    <header class="topline">
+      <h2 style="margin:0;">🏬 門市導覽</h2>
+      <span class="badge" id="badge"></span>
+    </header>
+
+    <p class="hint" id="hint">讀取中…</p>
+    <output id="status" aria-live="polite"></output>
+
+    <div class="list" id="list"></div>
+
+    <footer style="margin-top:10px;">
+      <button type="button" id="btn-close" class="btn">關閉</button>
+    </footer>
+
+    <details style="margin-top:10px;">
+      <summary>Debug（工程用）</summary>
+      <pre id="debug">[debug] boot.</pre>
+    </details>
+  </section>
+
+<script>
+  // ===== Config =====
+  const API_BIND = "https://cwsoft.leaflune.org/bind";
+  const LIFF_ID_DEFAULT = "2008039127-p7We0QWm"; // 你可沿用既有預設
+
+  // ===== DOM =====
+  const $ = (id) => document.getElementById(id);
+  const hintEl = $("hint");
+  const statusEl = $("status");
+  const listEl = $("list");
+  const badgeEl = $("badge");
+  const debugEl = $("debug");
+  const btnClose = $("btn-close");
+
+  function dbg(line){
+    const t = new Date().toISOString().slice(11,19);
+    debugEl.textContent += `\n[${t}] ${line}`;
+    debugEl.scrollTop = debugEl.scrollHeight;
+  }
+  function setStatus(text, type){
+    statusEl.className = "status" + (type ? " " + type : "");
+    statusEl.textContent = text || "";
+  }
+  function getParam(name){
+    return new URLSearchParams(location.search).get(name) || "";
+  }
+
+  function mapsUrlByAddress(addr){
+    const q = encodeURIComponent(addr);
+    return `https://www.google.com/maps/search/?api=1&query=${q}`;
+  }
+
+  function render(items){
+    listEl.innerHTML = "";
+    if (!items.length){
+      hintEl.textContent = "查無可用門市（可能都已收店 / 線上付款停用）。";
+      return;
+    }
+    hintEl.textContent = "請選擇門市：";
+
+    for (const it of items){
+      const div = document.createElement("div");
+      div.className = "item";
+
+      const name = document.createElement("h3");
+      name.textContent = it.store_name || "(未命名門市)";
+
+      const addr = document.createElement("div");
+      addr.className = "addr";
+      addr.textContent = it.store_address || "(未提供地址)";
+
+      const row = document.createElement("div");
+      row.className = "row";
+
+      const btnMap = document.createElement("button");
+      btnMap.type = "button";
+      btnMap.textContent = "在 Google 地圖開啟";
+      btnMap.addEventListener("click", () => {
+        const url = mapsUrlByAddress(it.store_address || it.store_name || "");
+        dbg(`open map: ${url}`);
+        window.open(url, "_blank");
+      });
+
+      row.appendChild(btnMap);
+
+      div.appendChild(name);
+      div.appendChild(addr);
+      div.appendChild(row);
+
+      listEl.appendChild(div);
+    }
+  }
+
+  async function fetchStores(dbName){
+    const url = new URL(`${API_BIND}/stores`);
+    url.searchParams.set("name", dbName);
+
+    dbg(`fetch: ${url.toString()}`);
+    const res = await fetch(url.toString(), { method:"GET", mode:"cors", cache:"no-store" });
+    const data = await res.json().catch(() => ({}));
+
+    if (!res.ok || !data?.ok){
+      throw new Error(data?.error || `HTTP ${res.status}`);
+    }
+    return data;
+  }
+
+  async function init(){
+    dbg("init start");
+
+    // 1) db name
+    const dbName = (getParam("name") || "").trim();
+    badgeEl.textContent = dbName ? `db: ${dbName}` : "db: (missing)";
+
+    if (!dbName){
+      hintEl.textContent = "網址缺少 name（資料庫名）。";
+      setStatus("請使用 ?name=久旺 的形式開啟", "error");
+      return;
+    }
+
+    // 2) init LIFF
+    const LIFF_ID = getParam("liffId") || LIFF_ID_DEFAULT;
+    try{
+      await liff.init({ liffId: LIFF_ID });
+      dbg("LIFF ok");
+    }catch(e){
+      dbg(`LIFF init failed: ${e?.message || e}`);
+      setStatus("LIFF 初始化失敗", "error");
+      return;
+    }
+
+    if (!liff.isLoggedIn()){
+      dbg("not logged in -> login()");
+      setStatus("尚未登入 Line，準備跳轉登入…");
+      liff.login();
+      return;
+    }
+
+    // 3) load stores
+    try{
+      setStatus("讀取門市中…");
+      const data = await fetchStores(dbName);
+      dbg(`stores ok: count=${data.count}`);
+      setStatus("");
+      render(data.items || []);
+    }catch(e){
+      dbg(`stores failed: ${e?.message || e}`);
+      setStatus(`讀取失敗：${e?.message || e}`, "error");
+      hintEl.textContent = "讀取門市清單失敗。";
+    }
+  }
+
+  btnClose.addEventListener("click", () => {
+    try{
+      if (window.liff && liff.isInClient()){
+        liff.closeWindow();
+      }else{
+        window.close();
+      }
+    }catch(e){
+      window.close();
+    }
+  });
+
+  init();
+</script>
+</body>
+</html>
