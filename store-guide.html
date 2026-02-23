@@ -170,17 +170,17 @@ for (const it of items){
     }
   }
 
-  btnClose.addEventListener("click", () => {
-    try{
-      if (window.liff && liff.isInClient()){
-        liff.closeWindow();
-      }else{
-        window.close();
-      }
-    }catch(e){
-      window.close();
-    }
-  });
+//   btnClose.addEventListener("click", () => {
+//     try{
+//       if (window.liff && liff.isInClient()){
+//         liff.closeWindow();
+//       }else{
+//         window.close();
+//       }
+//     }catch(e){
+//       window.close();
+//     }
+//   });
 
   init();
 </script>
