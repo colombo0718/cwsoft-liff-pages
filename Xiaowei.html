@@ -72,44 +72,70 @@
       chatEl.scrollTop = chatEl.scrollHeight;
     }
 
+// async function initModel() {
+//   statusEl.textContent = "模型載入中... 第一次會下載模型，可能要幾分鐘";
+
+//   engine = await CreateMLCEngine(
+
+//     // =========================
+//     // 可切換測試的模型
+//     // =========================
+
+//     // Qwen 系列
+//     // "Qwen2.5-7B-Instruct-q4f16_1-MLC",   // ⭐目前使用 (品質高，但載入很大)
+
+//     // "Qwen2.5-3B-Instruct-q4f16_1-MLC", // 中型模型
+//     // "Qwen2.5-1.5B-Instruct-q4f16_1-MLC", // 小型模型
+//     "Qwen2.5-0.5B-Instruct-q4f16_1-MLC", // 超小模型 (最適合瀏覽器)
+
+//     // 舊版 Qwen2
+//     // "Qwen2-1.5B-Instruct-q4f16_1-MLC",
+
+//     // Google Gemma
+//     // "gemma-2b-it-q4f16_1-MLC",
+//     // "gemma-7b-it-q4f16_1-MLC",
+
+//     // Microsoft Phi
+//     // "Phi-3-mini-4k-instruct-q4f16_1-MLC",
+//     // "Phi-3.5-mini-instruct-q4f16_1-MLC",
+
+//     // Llama 系列
+//     // "Llama-3-8B-Instruct-q4f16_1-MLC",
+
+//     {
+//       initProgressCallback: (report) => {
+//         statusEl.textContent = `模型載入中：${report.text || ""}`;
+//       }
+//     }
+//   );
+
+//   statusEl.textContent = "模型已就緒";
+// }
+
 async function initModel() {
-  statusEl.textContent = "模型載入中... 第一次會下載模型，可能要幾分鐘";
+  try {
+    statusEl.textContent = "模型載入中... 第一次會下載模型，可能要幾分鐘";
 
-  engine = await CreateMLCEngine(
-
-    // =========================
-    // 可切換測試的模型
-    // =========================
-
-    // Qwen 系列
-    // "Qwen2.5-7B-Instruct-q4f16_1-MLC",   // ⭐目前使用 (品質高，但載入很大)
-
-    // "Qwen2.5-3B-Instruct-q4f16_1-MLC", // 中型模型
-    // "Qwen2.5-1.5B-Instruct-q4f16_1-MLC", // 小型模型
-    "Qwen2.5-0.5B-Instruct-q4f16_1-MLC", // 超小模型 (最適合瀏覽器)
-
-    // 舊版 Qwen2
-    // "Qwen2-1.5B-Instruct-q4f16_1-MLC",
-
-    // Google Gemma
-    // "gemma-2b-it-q4f16_1-MLC",
-    // "gemma-7b-it-q4f16_1-MLC",
-
-    // Microsoft Phi
-    // "Phi-3-mini-4k-instruct-q4f16_1-MLC",
-    // "Phi-3.5-mini-instruct-q4f16_1-MLC",
-
-    // Llama 系列
-    // "Llama-3-8B-Instruct-q4f16_1-MLC",
-
-    {
-      initProgressCallback: (report) => {
-        statusEl.textContent = `模型載入中：${report.text || ""}`;
-      }
+    if (!navigator.gpu) {
+      statusEl.textContent = "此手機瀏覽器不支援 WebGPU";
+      return;
     }
-  );
 
-  statusEl.textContent = "模型已就緒";
+    engine = await CreateMLCEngine(
+      "Qwen2.5-0.5B-Instruct-q4f16_1-MLC",
+      {
+        initProgressCallback: (report) => {
+          console.log("progress:", report);
+          statusEl.textContent = `模型載入中：${report.text || ""}`;
+        }
+      }
+    );
+
+    statusEl.textContent = "模型已就緒";
+  } catch (err) {
+    console.error(err);
+    statusEl.textContent = "模型載入失敗：" + (err?.message || String(err));
+  }
 }
 
     async function sendMessage() {
