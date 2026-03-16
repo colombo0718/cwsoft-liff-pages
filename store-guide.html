@@ -12,10 +12,76 @@
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 
   <style>
-  .list{ flex-direction:column; gap:var(--space);display:block;}
+  /* .list{ flex-direction:column; gap:var(--space);display:block;}
   .item-left{display:grid; grid-template-columns:auto 1fr; column-gap:var(--space); text-align:left;}
   .item-left .btn-go{grid-row:1 / span 2;}
-  .item-left .store-name,.item-left .addr{margin:0; text-align:left;}
+  .item-left .store-name,.item-left .addr{margin:0; text-align:left;} */
+
+  .list{
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 16px;
+}
+
+.store-card{
+  width: 100%;
+  min-height: 168px;
+  padding: 16px 14px;
+  border: 0;
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 8px 20px rgba(0,0,0,.08);
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.store-card:active{
+  transform: scale(.98);
+}
+
+.store-card .store-name{
+  margin: 0;
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1.25;
+  color: #111;
+
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.store-card .addr{
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.45;
+  color: #666;
+
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  word-break: break-word;
+}
+
+.store-card .card-foot{
+  margin-top: auto;
+  font-size: 14px;
+  font-weight: 700;
+  color: #d68b00;
+}
+
+@media (max-width: 420px){
+  .list{
+    grid-template-columns: 1fr;
+  }
+}
   </style>
 </head>
 
@@ -75,28 +141,82 @@
     return `https://www.google.com/maps/search/?api=1&query=${q}`;
   }
 
-function render(items, dbName){
+// function render(items, dbName){
+//   listEl.innerHTML = "";
+//   if (!items.length){
+//     hintEl.textContent = "查無可用門市（可能都已收店 / 線上付款停用）。";
+//     return;
+//   }
+//   hintEl.textContent = "快速查看各門市位置，點擊即可開啟導航。";
+
+//   for (const it of items){
+//     // const itemEl = document.createElement("article");
+//     // itemEl.className = "item item-left";
+
+//     const itemEl = document.createElement("button");
+//     itemEl.type = "button";
+//     itemEl.className = "store-card";
+
+//     itemEl.addEventListener("click", () => {
+//       const url = mapsUrlByAddress(displayAddress || it.store_name || "");
+//       dbg(`open map: ${url}`);
+//       window.open(url, "_blank");
+//     });
+
+//     const rawAddress = String(it.address || "").trim();
+//     const displayAddress = rawAddress.length < 5
+//       ? `${dbName}${it.store_name || ""}`
+//       : rawAddress;
+
+//     const btnGo = document.createElement("button");
+//     btnGo.type = "button";
+//     btnGo.className = "btn-go";
+//     btnGo.textContent = "🚗前往";
+//     btnGo.addEventListener("click", () => {
+//       const url = mapsUrlByAddress(displayAddress || it.store_name || "");
+//       dbg(`open map: ${url}`);
+//       window.open(url, "_blank");
+//     });
+
+//     const title = document.createElement("h3");
+//     title.className = "store-name";
+//     title.textContent = it.store_name || "(未命名門市)";
+
+//     const addr = document.createElement("p");
+//     addr.className = "addr";
+//     addr.textContent = displayAddress || "(未提供地址)";
+
+//     itemEl.appendChild(btnGo);
+//     itemEl.appendChild(title);
+//     itemEl.appendChild(addr);
+
+//     listEl.appendChild(itemEl);
+//   }
+// }
+
+
+function render(items){
   listEl.innerHTML = "";
+
   if (!items.length){
     hintEl.textContent = "查無可用門市（可能都已收店 / 線上付款停用）。";
     return;
   }
-  hintEl.textContent = "快速查看各門市位置，點擊即可開啟導航。";
+
+  hintEl.textContent = `請選擇門市（共 ${items.length} 間）：`;
+  const dbName = (getParam("name") || "").trim();
 
   for (const it of items){
-    const itemEl = document.createElement("article");
-    itemEl.className = "item item-left";
-
     const rawAddress = String(it.address || "").trim();
     const displayAddress = rawAddress.length < 5
       ? `${dbName}${it.store_name || ""}`
       : rawAddress;
 
-    const btnGo = document.createElement("button");
-    btnGo.type = "button";
-    btnGo.className = "btn-go";
-    btnGo.textContent = "🚗前往";
-    btnGo.addEventListener("click", () => {
+    const itemEl = document.createElement("button");
+    itemEl.type = "button";
+    itemEl.className = "store-card";
+
+    itemEl.addEventListener("click", () => {
       const url = mapsUrlByAddress(displayAddress || it.store_name || "");
       dbg(`open map: ${url}`);
       window.open(url, "_blank");
@@ -110,14 +230,17 @@ function render(items, dbName){
     addr.className = "addr";
     addr.textContent = displayAddress || "(未提供地址)";
 
-    itemEl.appendChild(btnGo);
+    const foot = document.createElement("div");
+    foot.className = "card-foot";
+    foot.textContent = "點擊卡片即可導航";
+
     itemEl.appendChild(title);
     itemEl.appendChild(addr);
+    itemEl.appendChild(foot);
 
     listEl.appendChild(itemEl);
   }
 }
-
   async function fetchStores(dbName){
     const url = new URL(`${API_BIND}/branches`);
     url.searchParams.set("name", dbName);
