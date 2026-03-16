@@ -12,10 +12,50 @@
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 
   <style>
-  .list{ flex-direction:column; gap:var(--space);display:block;}
-  .item-left{display:grid; grid-template-columns:auto 1fr; column-gap:var(--space); text-align:left;}
-  .item-left .btn-go{grid-row:1 / span 2;}
-  .item-left .store-name,.item-left .addr{margin:0; text-align:left;}
+.list{
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 14px;
+}
+
+.item.item-left{
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+  padding: 16px;
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 8px 24px rgba(0,0,0,.08);
+  text-align: left;
+}
+
+.item-left .store-name{
+  margin: 0;
+  font-size: 28px;
+  line-height: 1.2;
+}
+
+.item-left .addr{
+  margin: 0;
+  font-size: 18px;
+  line-height: 1.5;
+  color: #555;
+  word-break: break-word;
+}
+
+.item-left .btn-go{
+  justify-self: start;
+  min-width: 120px;
+  padding: 12px 18px;
+  border: 0;
+  border-radius: 999px;
+  font-size: 18px;
+  font-weight: 700;
+  background: #f7b500;
+  color: #fff;
+  cursor: pointer;
+}
   </style>
 </head>
 
@@ -81,7 +121,7 @@ function render(items, dbName){
     hintEl.textContent = "查無可用門市（可能都已收店 / 線上付款停用）。";
     return;
   }
-  hintEl.textContent = "快速查看各門市位置，點擊即可開啟導航，方便顧客就近前往。";
+  hintEl.textContent = "快速查看各門市位置，點擊即可開啟導航。";
 
   for (const it of items){
     const itemEl = document.createElement("article");
