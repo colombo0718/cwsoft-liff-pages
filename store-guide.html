@@ -22,7 +22,7 @@
 <body>
   <section class="card">
     <header class="topline">
-      <h2 style="margin:0;">🏬 門市導覽</h2>
+      <h2 id="pageTitle" style="margin:0;">🏬 門市導覽</h2>
       <span class="badge" id="badge"></span>
     </header>
 
@@ -135,7 +135,8 @@ function render(items, dbName){
 
     // 1) db name
     const dbName = (getParam("name") || "").trim();
-    badgeEl.textContent = dbName ? `db: ${dbName}` : "db: (missing)";
+    pageTitleEl.textContent = dbName ? `🏬 ${dbName} 門市導覽` : "🏬 門市導覽";
+    badgeEl.textContent = "";
 
     if (!dbName){
       hintEl.textContent = "網址缺少 name（資料庫名）。";
