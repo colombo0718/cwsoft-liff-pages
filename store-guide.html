@@ -81,34 +81,39 @@ function render(items){
   }
   hintEl.textContent = "請選擇門市：";
 
-for (const it of items){
-  const itemEl = document.createElement("article");
-  itemEl.className = "item item-left";
+  for (const it of items){
+    const itemEl = document.createElement("article");
+    itemEl.className = "item item-left";
 
-  const btnGo = document.createElement("button");
-  btnGo.type = "button";
-  btnGo.className = "btn-go";
-  btnGo.textContent = "🚗前往";
-  btnGo.addEventListener("click", () => {
-    const url = mapsUrlByAddress(it.address || it.store_name || "");
-    dbg(`open map: ${url}`);
-    window.open(url, "_blank");
-  });
+    const rawAddress = String(it.address || "").trim();
+    const displayAddress = rawAddress.length < 5
+      ? `${dbName}${it.store_name || ""}`
+      : rawAddress;
 
-  const title = document.createElement("h3");
-  title.className = "store-name";
-  title.textContent = it.store_name || "(未命名門市)";
+    const btnGo = document.createElement("button");
+    btnGo.type = "button";
+    btnGo.className = "btn-go";
+    btnGo.textContent = "🚗前往";
+    btnGo.addEventListener("click", () => {
+      const url = mapsUrlByAddress(displayAddress || it.store_name || "");
+      dbg(`open map: ${url}`);
+      window.open(url, "_blank");
+    });
 
-  const addr = document.createElement("p");
-  addr.className = "addr";
-  addr.textContent = it.address || "(未提供地址)";
+    const title = document.createElement("h3");
+    title.className = "store-name";
+    title.textContent = it.store_name || "(未命名門市)";
 
-  itemEl.appendChild(btnGo);
-  itemEl.appendChild(title);
-  itemEl.appendChild(addr);
+    const addr = document.createElement("p");
+    addr.className = "addr";
+    addr.textContent = displayAddress || "(未提供地址)";
 
-  listEl.appendChild(itemEl);
-}
+    itemEl.appendChild(btnGo);
+    itemEl.appendChild(title);
+    itemEl.appendChild(addr);
+
+    listEl.appendChild(itemEl);
+  }
 }
 
   async function fetchStores(dbName){
@@ -170,17 +175,7 @@ for (const it of items){
     }
   }
 
-//   btnClose.addEventListener("click", () => {
-//     try{
-//       if (window.liff && liff.isInClient()){
-//         liff.closeWindow();
-//       }else{
-//         window.close();
-//       }
-//     }catch(e){
-//       window.close();
-//     }
-//   });
+
 
   init();
 </script>
