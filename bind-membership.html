@@ -189,7 +189,7 @@
         if (isBound) {
           dbg(`Bind：已綁定 (member_no=${memberNo ?? "null"}, bind_id=${bindId ?? "null"})`);
           setStatus("此帳號已綁定會員，表單已鎖定。", "success");
-          memberFormHintEl.textContent = "您已綁定過會員資料";
+          memberFormHintEl.textContent = "您已綁定過會員資料，表單已鎖定。";
           lockAllUI();
         } else {
           dbg("Bind：未綁定");
