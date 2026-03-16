@@ -2,6 +2,7 @@
     const $ = (id) => document.getElementById(id);
 
     const form = $("member-form");
+    const memberFormHintEl = $("member-form-hint");
     const nameInput = $("name");
     const phoneInput = $("phone");
     const addressInput = $("address");
