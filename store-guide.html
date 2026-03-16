@@ -17,7 +17,7 @@
   .item-left .btn-go{grid-row:1 / span 2;}
   .item-left .store-name,.item-left .addr{margin:0; text-align:left;} */
 
-  .list{
+.list{
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 14px;
@@ -26,8 +26,8 @@
 
 .store-card{
   width: 100%;
-  min-height: 168px;
-  padding: 16px 14px;
+  min-height: 260px;
+  padding: 0;
   border: 0;
   border-radius: 18px;
   background: #fff;
@@ -35,8 +35,7 @@
   text-align: left;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  gap: 10px;
+  overflow: hidden;
   cursor: pointer;
 }
 
@@ -44,9 +43,25 @@
   transform: scale(.98);
 }
 
-.store-card .store-name{
+.store-thumb{
+  width: 100%;
+  height: 110px;
+  object-fit: cover;
+  display: block;
+  background: #e9ecef;
+}
+
+.store-body{
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 14px 12px 12px;
+  gap: 8px;
+}
+
+.store-name{
   margin: 0;
-  font-size: 22px;
+  font-size: 18px;
   font-weight: 800;
   line-height: 1.25;
   color: #111;
@@ -57,9 +72,9 @@
   overflow: hidden;
 }
 
-.store-card .addr{
+.addr{
   margin: 0;
-  font-size: 16px;
+  font-size: 15px;
   line-height: 1.45;
   color: #666;
 
@@ -70,13 +85,12 @@
   word-break: break-word;
 }
 
-.store-card .card-foot{
+.card-foot{
   margin-top: auto;
   font-size: 14px;
   font-weight: 700;
   color: #d68b00;
 }
-
 /* @media (max-width: 420px){
   .list{
     grid-template-columns: 1fr;
