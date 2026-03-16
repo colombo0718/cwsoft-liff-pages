@@ -6,6 +6,8 @@
     const nameInput = $("name");
     const phoneInput = $("phone");
     const addressInput = $("address");
+    const addrCity = $("addrCity");
+    const addrDistrict = $("addrDistrict");
 
     const captchaCanvas = $("captchaCanvas");
     const btnCaptchaRefresh = $("btn-captcha-refresh");
@@ -68,7 +70,7 @@
     }
 
     function lockAllUI() {
-      [nameInput, phoneInput, addressInput, captchaInput, otpInput].forEach(el => el.disabled = true);
+      [nameInput, phoneInput, addressInput,addrCity, addrCity, captchaInput, otpInput].forEach(el => el.disabled = true);
     //   [btnCaptchaRefresh, btnCaptchaVerify, btnOtpSend, btnOtpVerify, btnSubmit].forEach(el => el.disabled = true);
       [btnCaptchaRefresh, btnOtpSend, btnSubmit].forEach(el => el.disabled = true);
     }
