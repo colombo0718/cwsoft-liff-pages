@@ -73,7 +73,7 @@
     return `https://www.google.com/maps/search/?api=1&query=${q}`;
   }
 
-function render(items){
+function render(items, dbName){
   listEl.innerHTML = "";
   if (!items.length){
     hintEl.textContent = "查無可用門市（可能都已收店 / 線上付款停用）。";
@@ -167,7 +167,7 @@ function render(items){
       const data = await fetchStores(dbName);
       dbg(`stores ok: count=${data.count}`);
       setStatus("");
-      render(data.items || []);
+      render(data.items || [],dbName);
     }catch(e){
       dbg(`stores failed: ${e?.message || e}`);
       setStatus(`讀取失敗：${e?.message || e}`, "error");
