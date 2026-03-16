@@ -206,7 +206,7 @@ function render(items){
   hintEl.textContent = `請選擇門市（共 ${items.length} 間）：`;
   const dbName = (getParam("name") || "").trim();
 
-  for (const it of items){
+  for (const [index, it] of items.entries()){
     const rawAddress = String(it.address || "").trim();
     const displayAddress = rawAddress.length < 5
       ? `${dbName}${it.store_name || ""}`
@@ -222,6 +222,14 @@ function render(items){
       window.open(url, "_blank");
     });
 
+    const img = document.createElement("img");
+    img.className = "store-thumb";
+    img.src = `./store${index + 1}.jpg`;
+    img.alt = it.store_name || "門市圖片";
+
+    const body = document.createElement("div");
+    body.className = "store-body";
+
     const title = document.createElement("h3");
     title.className = "store-name";
     title.textContent = it.store_name || "(未命名門市)";
@@ -234,9 +242,12 @@ function render(items){
     foot.className = "card-foot";
     foot.textContent = "點擊卡片即可導航";
 
-    itemEl.appendChild(title);
-    itemEl.appendChild(addr);
-    itemEl.appendChild(foot);
+    body.appendChild(title);
+    body.appendChild(addr);
+    body.appendChild(foot);
+
+    itemEl.appendChild(img);
+    itemEl.appendChild(body);
 
     listEl.appendChild(itemEl);
   }
