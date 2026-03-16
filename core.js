@@ -70,7 +70,7 @@
     function lockAllUI() {
       [nameInput, phoneInput, addressInput, captchaInput, otpInput].forEach(el => el.disabled = true);
     //   [btnCaptchaRefresh, btnCaptchaVerify, btnOtpSend, btnOtpVerify, btnSubmit].forEach(el => el.disabled = true);
-      [btnCaptchaRefresh, btnCaptchaVerify, btnOtpSend, btnSubmit].forEach(el => el.disabled = true);
+      [btnCaptchaRefresh, btnOtpSend, btnSubmit].forEach(el => el.disabled = true);
     }
 
     function dbLooksOk(db) {
