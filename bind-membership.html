@@ -426,7 +426,7 @@ form.addEventListener("submit", async (e) => {
     setStatus("綁定送出成功（先求有）", "success");
 
     setStatus("綁定成功，5 秒後將自動離開頁面。", "success");
-    captchaFormHintEl.textContent = "✅ 綁定成功，5 秒後將自動離開頁面。";
+    captchaFormHintEl.textContent = "綁定成功，5 秒後將自動離開頁面。";
     lockAllUI();
 
     setTimeout(() => {
@@ -437,7 +437,7 @@ form.addEventListener("submit", async (e) => {
         location.href = "about:blank";
       }
     }, 5000);
-    
+
   } catch (err) {
     setStatus(`綁定送出失敗：${err?.message || err}`, "error");
   }
