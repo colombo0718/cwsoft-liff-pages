@@ -9,6 +9,7 @@
     const addrCity = $("addrCity");
     const addrDistrict = $("addrDistrict");
 
+    const captchaFormHintEl = $("captcha-form-hint");
     const captchaCanvas = $("captchaCanvas");
     const btnCaptchaRefresh = $("btn-captcha-refresh");
     const captchaInput = $("captchaInput");
