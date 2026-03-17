@@ -70,7 +70,7 @@
       <!-- 安全驗證 -->
       <fieldset>
         <legend>🛡️ 安全驗證</legend>
-        <p class="hint">請完成安全驗證</p>
+        <p id="captcha-form-hint" class="hint">請完成安全驗證</p>
 
         <section aria-label="圖片驗證">
           <h4>圖片</h4>
@@ -267,13 +267,15 @@ function verifyCaptchaNow() {
   if (v === captchaCode) {
     captchaVerified = true;
     dbg("CAPTCHA：驗證成功");
+    captchaFormHintEl.textContent = "數字圖驗證成功";
     // setInline(captchaVerifyStatus, "驗證成功", "ok");
   } else {
     captchaVerified = false;
     dbg(`CAPTCHA：驗證失敗 (input=${v || "empty"})`);
+    captchaFormHintEl.textContent = "數字圖驗證失敗";
     // setInline(captchaVerifyStatus, "驗證失敗", "bad");
     // 可選：失敗就換一張，降低暴力嘗試
-    resetCaptcha();
+    // resetCaptcha();
   }
   refreshSubmitState();
 }
@@ -422,6 +424,20 @@ form.addEventListener("submit", async (e) => {
     dbg("bind ok resp:");
     dbg(JSON.stringify(data));
     setStatus("綁定送出成功（先求有）", "success");
+
+    setStatus("綁定成功，5 秒後將自動離開頁面。", "success");
+    captchaFormHintEl.textContent = "✅ 綁定成功，5 秒後將自動離開頁面。";
+    lockAllUI();
+
+    setTimeout(() => {
+      if (window.liff && liff.isInClient()) {
+        liff.closeWindow();
+      } else {
+        window.close();
+        location.href = "about:blank";
+      }
+    }, 5000);
+    
   } catch (err) {
     setStatus(`綁定送出失敗：${err?.message || err}`, "error");
   }
