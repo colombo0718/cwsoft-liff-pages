@@ -209,8 +209,18 @@
         if (isBound) {
           dbg(`Bind：已綁定 (member_no=${memberNo ?? "null"}, bind_id=${bindId ?? "null"})`);
           setStatus("此帳號已綁定會員，表單已鎖定。", "success");
-          memberFormHintEl.textContent = "您已綁定過會員資料，表單已鎖定。";
+          memberFormHintEl.textContent = "您已綁定過會員資料，表單已鎖定，5 秒後將離開此頁面。";
           lockAllUI();
+
+            setTimeout(() => {
+              if (window.liff && liff.isInClient()) {
+                liff.closeWindow();
+              } else {
+                window.close();
+                window.location.href = "about:blank";
+              }
+            }, 5000);
+
         } else {
           dbg("Bind：未綁定");
           setStatus("");
