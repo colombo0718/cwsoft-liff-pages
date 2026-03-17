@@ -209,17 +209,17 @@
         if (isBound) {
           dbg(`Bind：已綁定 (member_no=${memberNo ?? "null"}, bind_id=${bindId ?? "null"})`);
           setStatus("此帳號已綁定會員，表單已鎖定。", "success");
-          memberFormHintEl.textContent = "您已綁定過會員資料，表單已鎖定，5 秒後將離開此頁面。";
+          memberFormHintEl.textContent = "您已綁定過會員資料，表單已鎖定。";
           lockAllUI();
 
-            setTimeout(() => {
-              if (window.liff && liff.isInClient()) {
-                liff.closeWindow();
-              } else {
-                window.close();
-                window.location.href = "about:blank";
-              }
-            }, 5000);
+            // setTimeout(() => {
+            //   if (window.liff && liff.isInClient()) {
+            //     liff.closeWindow();
+            //   } else {
+            //     window.close();
+            //     window.location.href = "about:blank";
+            //   }
+            // }, 5000);
 
         } else {
           dbg("Bind：未綁定");
@@ -426,17 +426,17 @@ form.addEventListener("submit", async (e) => {
     setStatus("綁定送出成功（先求有）", "success");
 
     setStatus("綁定成功，5 秒後將自動離開頁面。", "success");
-    captchaFormHintEl.textContent = "綁定成功，5 秒後將自動離開頁面。";
+    captchaFormHintEl.textContent = "會員資料綁定成功，表單已鎖定。";
     lockAllUI();
 
-    setTimeout(() => {
-      if (window.liff && liff.isInClient()) {
-        liff.closeWindow();
-      } else {
-        window.close();
-        location.href = "about:blank";
-      }
-    }, 5000);
+    // setTimeout(() => {
+    //   if (window.liff && liff.isInClient()) {
+    //     liff.closeWindow();
+    //   } else {
+    //     window.close();
+    //     location.href = "about:blank";
+    //   }
+    // }, 5000);
 
   } catch (err) {
     setStatus(`綁定送出失敗：${err?.message || err}`, "error");
