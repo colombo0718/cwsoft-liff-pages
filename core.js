@@ -29,6 +29,7 @@
     // ====== State ======
     let oaid = "";
     let dbName = "";
+    let marketingBaseUrl = "";
     let liffReady = false;
     let liffProfile = null;
 
@@ -113,6 +114,7 @@
     async function lookupDbNameByOaId(oaidValue) {
       if (!oaidValue) {
         dbName = "（未提供 oaid）";
+        marketingBaseUrl = "";
         dbg(`oaid missing -> db_name=${dbName}`);
         return;
       }
@@ -123,15 +125,18 @@
 
         if (!res.ok || !data?.ok) {
           dbName = "（查詢失敗）";
+          marketingBaseUrl = "";
           dbg(`oa_lookup failed: HTTP ${res.status} / ${data?.error || "unknown"}`);
           return;
         }
 
         // 你已改回傳格式：外層 db_name
         dbName = data?.db_name || "（查無對應）";
+        marketingBaseUrl = (data?.marketing_base_url || "").trim();
         dbg(`oa_lookup ok -> oaid=${oaidValue}, db_name=${dbName}`);
       } catch (e) {
         dbName = "（查詢失敗）";
+        marketingBaseUrl = "";
         dbg(`oa_lookup exception: ${e?.message || e}`);
       }
     }

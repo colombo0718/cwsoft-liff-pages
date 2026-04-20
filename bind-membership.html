@@ -149,6 +149,30 @@
       return new URLSearchParams(location.search).get(name) || "";
     }
 
+    function buildMemberCenterUrl() {
+      const baseUrl = (marketingBaseUrl || "").trim();
+      const lineUid = (liffProfile?.userId || "").trim();
+      if (!baseUrl || !lineUid) return "";
+
+      const url = new URL("/Products/MemberCenter", baseUrl);
+      url.searchParams.set("lineUid", lineUid);
+      return url.toString();
+    }
+
+    function redirectToMemberCenter() {
+      const targetUrl = buildMemberCenterUrl();
+      if (!targetUrl) {
+        dbg("member center redirect skipped: missing marketingBaseUrl or lineUid");
+        return;
+      }
+
+      dbg(`redirect member center -> ${targetUrl}`);
+      setStatus("此帳號已綁定會員，正在前往會員中心…", "success");
+      setTimeout(() => {
+        location.replace(targetUrl);
+      }, 1200);
+    }
+
     // ====== Main init ======
     async function initAll() {
       dbg("init start");
@@ -211,6 +235,7 @@
           setStatus("此帳號已綁定會員，表單已鎖定。", "success");
           memberFormHintEl.textContent = "您已綁定過會員資料，表單已鎖定。";
           lockAllUI();
+          redirectToMemberCenter();
 
             // setTimeout(() => {
             //   if (window.liff && liff.isInClient()) {
