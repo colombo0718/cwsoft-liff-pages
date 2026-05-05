@@ -238,7 +238,7 @@ function render(items){
 
     const img = document.createElement("img");
     img.className = "store-thumb";
-    img.src = `./store${index + 1}.jpg`;
+    img.src = `./${getParam("name")}/store${index + 1}.jpg`;
     img.alt = it.store_name || "門市圖片";
 
     const body = document.createElement("div");
