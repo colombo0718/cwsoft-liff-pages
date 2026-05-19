@@ -267,19 +267,19 @@
 
         if (isBound) {
           dbg(`Bind：已綁定 (member_no=${memberNo ?? "null"}, bind_id=${bindId ?? "null"})`);
-          setStatus("此帳號已綁定會員，表單已鎖定。", "success");
           memberFormHintEl.textContent = "您已綁定過會員資料，表單已鎖定。";
           lockAllUI();
-          redirectToMemberCenter();
 
-            // setTimeout(() => {
-            //   if (window.liff && liff.isInClient()) {
-            //     liff.closeWindow();
-            //   } else {
-            //     window.close();
-            //     window.location.href = "about:blank";
-            //   }
-            // }, 5000);
+          // 有 marketing URL → 跳會員中心；沒設 → 留訊息 + 關 loading，避免卡圈圈
+          const memberCenterUrl = buildMemberCenterUrl();
+          if (memberCenterUrl) {
+            setStatus("此帳號已綁定會員，表單已鎖定。", "success");
+            redirectToMemberCenter();
+          } else {
+            dbg("已綁定但 marketing_base_url 未設定，停留並提示客服");
+            setStatus("此帳號已綁定會員，但會員中心連結尚未設定，請聯絡客服。", "warn");
+            hideGate();
+          }
 
         } else {
           dbg("Bind：未綁定");
