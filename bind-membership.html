@@ -188,7 +188,9 @@
       const lineUid = (liffProfile?.userId || "").trim();
       if (!baseUrl || !lineUid) return "";
 
-      const url = new URL("/Products/MemberCenter", baseUrl);
+      // 進階行銷系統_網址 本身就是會員中心入口，不要拼 hardcoded path
+      // （之前拼 /Products/MemberCenter 對零壹通訊行的 IIS 是 404）
+      const url = new URL(baseUrl);
       url.searchParams.set("lineUid", lineUid);
       return url.toString();
     }
@@ -273,16 +275,15 @@
           dbg(`Bind：已綁定 (member_no=${memberNo ?? "null"}, bind_id=${bindId ?? "null"})`);
           memberFormHintEl.textContent = "您已綁定過會員資料，表單已鎖定。";
           lockAllUI();
+          hideGate();   // 不論有沒有 marketing URL 都先關 loading，讓 user 看到下方狀態訊息
 
-          // 有 marketing URL → 跳會員中心；沒設 → 留訊息 + 關 loading，避免卡圈圈
           const memberCenterUrl = buildMemberCenterUrl();
           if (memberCenterUrl) {
-            setStatus("此帳號已綁定會員，表單已鎖定。", "success");
+            setStatus("此帳號已綁定會員，正在前往會員中心…", "success");
             redirectToMemberCenter();
           } else {
             dbg("已綁定但 marketing_base_url 未設定，停留並提示客服");
             setStatus("此帳號已綁定會員，但會員中心連結尚未設定，請聯絡客服。", "warn");
-            hideGate();
           }
 
         } else {
@@ -489,20 +490,17 @@ form.addEventListener("submit", async (e) => {
 
     dbg("bind ok resp:");
     dbg(JSON.stringify(data));
-    setStatus("綁定送出成功（先求有）", "success");
-
-    setStatus("綁定成功，5 秒後將自動離開頁面。", "success");
     captchaFormHintEl.textContent = "會員資料綁定成功，表單已鎖定。";
     lockAllUI();
 
-    // setTimeout(() => {
-    //   if (window.liff && liff.isInClient()) {
-    //     liff.closeWindow();
-    //   } else {
-    //     window.close();
-    //     location.href = "about:blank";
-    //   }
-    // }, 5000);
+    // 綁定成功 → 跟「已綁定」path 一致，跳會員中心
+    const memberCenterUrl = buildMemberCenterUrl();
+    if (memberCenterUrl) {
+      setStatus("綁定成功，正在前往會員中心…", "success");
+      setTimeout(() => location.replace(memberCenterUrl), 1200);
+    } else {
+      setStatus("綁定成功（會員中心連結尚未設定，請聯絡客服）。", "success");
+    }
 
   } catch (err) {
     setStatus(`綁定送出失敗：${err?.message || err}`, "error");
