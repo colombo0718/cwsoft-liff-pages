@@ -188,9 +188,10 @@
       const lineUid = (liffProfile?.userId || "").trim();
       if (!baseUrl || !lineUid) return "";
 
-      // 進階行銷系統_網址 本身就是會員中心入口，不要拼 hardcoded path
-      // （之前拼 /Products/MemberCenter 對零壹通訊行的 IIS 是 404）
-      const url = new URL(baseUrl);
+      // 進階行銷系統_網址 = base，會員中心固定 path 是 /Products/MemberCenter
+      // 之前以為 404 是 path 錯、實際上 path 對、404 是 server 回「查無會員」
+      // （因為 bind_server.py 之前寫死 DB_NAME=POSV3測試專用，綁定資料寫錯 DB）
+      const url = new URL("/Products/MemberCenter", baseUrl);
       url.searchParams.set("lineUid", lineUid);
       return url.toString();
     }
