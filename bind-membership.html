@@ -28,6 +28,10 @@
       gap: 16px;
       z-index: 100;
     }
+    /* hideGate() 設 hidden=true 需要 explicit display:none，因為上面 display:flex 會蓋過 [hidden] */
+    #loading-gate[hidden] {
+      display: none;
+    }
     #loading-gate p {
       color: var(--muted, gray);
       font-size: var(--label-size, 15px);
