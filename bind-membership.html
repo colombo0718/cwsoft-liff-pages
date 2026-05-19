@@ -53,7 +53,7 @@
 
   <div id="loading-gate">
     <div class="spinner"></div>
-    <p>確認會員身分中…</p>
+    <p id="loading-gate-text">確認會員身分中…</p>
   </div>
 
   <section class="card" aria-label="綁定會員">
@@ -276,15 +276,20 @@
           dbg(`Bind：已綁定 (member_no=${memberNo ?? "null"}, bind_id=${bindId ?? "null"})`);
           memberFormHintEl.textContent = "您已綁定過會員資料，表單已鎖定。";
           lockAllUI();
-          hideGate();   // 不論有沒有 marketing URL 都先關 loading，讓 user 看到下方狀態訊息
 
           const memberCenterUrl = buildMemberCenterUrl();
           if (memberCenterUrl) {
+            // 已綁定 → 即將 redirect。**保留 loading-gate** 蓋住表單，避免 1.2s 等待期間 form 露出來
+            // 改 loading 文字讓 user 知道在跳轉中
+            const gateText = document.getElementById("loading-gate-text");
+            if (gateText) gateText.textContent = "正在前往會員中心…";
             setStatus("此帳號已綁定會員，正在前往會員中心…", "success");
             redirectToMemberCenter();
           } else {
+            // 沒設 marketing URL → 不會 redirect、只能停留顯示提示。這時才 hideGate 把 form 露出來
             dbg("已綁定但 marketing_base_url 未設定，停留並提示客服");
             setStatus("此帳號已綁定會員，但會員中心連結尚未設定，請聯絡客服。", "warn");
+            hideGate();
           }
 
         } else {
